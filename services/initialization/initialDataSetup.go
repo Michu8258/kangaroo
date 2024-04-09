@@ -2,6 +2,7 @@ package initialization
 
 import (
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/types"
 	"github.com/beevik/guid"
 )
 
@@ -20,9 +21,9 @@ func clearUnwantedData(sudoku *models.Sudoku) {
 	sudoku.SubSudokus = []*models.SubSudoku{}
 	for _, sudokuBox := range sudoku.Boxes {
 		for _, sudokuCell := range sudokuBox.Cells {
-			sudokuCell.PotentialValues = &[]int{}
+			sudokuCell.PotentialValues = &types.GenericSlice[int]{}
 			sudokuCell.Box = nil
-			sudokuCell.MemberOfLines = &[]*models.SudokuLine{}
+			sudokuCell.MemberOfLines = types.GenericSlice[*models.SudokuLine]{}
 		}
 	}
 }

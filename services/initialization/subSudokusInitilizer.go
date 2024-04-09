@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 )
 
@@ -62,7 +61,7 @@ func initializeSubSudokus(sudoku *models.Sudoku) []error {
 }
 
 func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) error {
-	topLeftSubSudokuBox := helpers.FirstOrDefault(sudoku.Boxes, nil, func(box *models.SudokuBox) bool {
+	topLeftSubSudokuBox := sudoku.Boxes.FirstOrDefault(nil, func(box *models.SudokuBox) bool {
 		return box.IndexRow == startRowIndex && box.IndexColumn == startColumnIndex
 	})
 
@@ -86,7 +85,7 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 
 	for boxRowIndex := startRowIndex; boxRowIndex <= endRowIndex; boxRowIndex++ {
 		for boxColumnIndex := startColumnIndex; boxColumnIndex <= endColumnIndex; boxColumnIndex++ {
-			potentialSubSudokuBox := helpers.FirstOrDefault(sudoku.Boxes, nil, func(box *models.SudokuBox) bool {
+			potentialSubSudokuBox := sudoku.Boxes.FirstOrDefault(nil, func(box *models.SudokuBox) bool {
 				return box.IndexRow == boxRowIndex && box.IndexColumn == boxColumnIndex
 			})
 
@@ -108,13 +107,17 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 	}
 
 	// we found all required boxes to build a sub-sudoku and all of them are enabled (NOT disabled)
-	sudoku.SubSudokus = append(sudoku.SubSudokus, &models.SubSudoku{Boxes: subSudokuBoxes})
+	sudoku.SubSudokus = append(sudoku.SubSudokus, &models.SubSudoku{
+		Boxes:                 subSudokuBoxes,
+		TopLeftBoxRowIndex:    startRowIndex,
+		TopLeftBoxColumnIndex: startColumnIndex,
+	})
 	return nil
 }
 
 func validateBoxesAssignments(sudoku *models.Sudoku) error {
 	// every not disabled box must appear in at least one sub-sudoku
-	notDisabledBoxes := helpers.Where(sudoku.Boxes, func(box *models.SudokuBox) bool {
+	notDisabledBoxes := sudoku.Boxes.Where(func(box *models.SudokuBox) bool {
 		return !box.Disabled
 	})
 
@@ -124,8 +127,8 @@ func validateBoxesAssignments(sudoku *models.Sudoku) error {
 
 	for _, box := range notDisabledBoxes {
 		// we are searching for first sub-sudoku which has specific box in its boxes collection
-		subSudoku := helpers.FirstOrDefault(sudoku.SubSudokus, nil, func(subSudoku *models.SubSudoku) bool {
-			boxIsAMember := helpers.Any(subSudoku.Boxes, func(subSudokuBox *models.SudokuBox) bool {
+		subSudoku := sudoku.SubSudokus.FirstOrDefault(nil, func(subSudoku *models.SubSudoku) bool {
+			boxIsAMember := subSudoku.Boxes.Any(func(subSudokuBox *models.SudokuBox) bool {
 				return subSudokuBox.Id == box.Id
 			})
 

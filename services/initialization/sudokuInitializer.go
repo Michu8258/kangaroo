@@ -15,7 +15,12 @@ func InitializeSudoku(sudoku *models.Sudoku, settings *models.Settings) []error 
 		return errors
 	}
 
-	assignSudokuReferences(sudoku)
+	err = assignSudokuReferences(sudoku)
+	if err != nil {
+		return []error{err}
+	}
+
+	// validate sudoku corectness
 
 	return []error{}
 }

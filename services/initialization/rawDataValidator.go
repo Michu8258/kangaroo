@@ -3,7 +3,6 @@ package initialization
 import (
 	"fmt"
 
-	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 )
 
@@ -89,7 +88,7 @@ func validateBoxesPresence(sudoku *models.Sudoku) []error {
 	var rowIndex, columnIndex int8
 	for rowIndex = 0; rowIndex < sudoku.Layout.Height; rowIndex++ {
 		for columnIndex = 0; columnIndex < sudoku.Layout.Width; columnIndex++ {
-			box := helpers.FirstOrDefault(sudoku.Boxes, nil, func(b *models.SudokuBox) bool {
+			box := sudoku.Boxes.FirstOrDefault(nil, func(b *models.SudokuBox) bool {
 				return b.IndexRow == rowIndex && b.IndexColumn == columnIndex
 			})
 
@@ -134,7 +133,7 @@ func validateCellsPresence(sudoku *models.Sudoku, box *models.SudokuBox) error {
 
 	for rowIndex = 0; rowIndex < sudoku.BoxSize; rowIndex++ {
 		for columnIndex = 0; columnIndex < sudoku.BoxSize; columnIndex++ {
-			cell := helpers.FirstOrDefault(box.Cells, nil, func(c *models.SudokuCell) bool {
+			cell := box.Cells.FirstOrDefault(nil, func(c *models.SudokuCell) bool {
 				return c.IndexRowInBox == rowIndex && c.IndexColumnInBox == columnIndex
 			})
 
@@ -160,7 +159,7 @@ func validateCellsInitialValues(sudoku *models.Sudoku) []error {
 
 	for boxRowIndex = 0; boxRowIndex < sudoku.Layout.Height; boxRowIndex++ {
 		for boxColumnIndex = 0; boxColumnIndex < sudoku.Layout.Width; boxColumnIndex++ {
-			box := helpers.FirstOrDefault(sudoku.Boxes, nil, func(b *models.SudokuBox) bool {
+			box := sudoku.Boxes.FirstOrDefault(nil, func(b *models.SudokuBox) bool {
 				return b.IndexRow == boxRowIndex && b.IndexColumn == boxColumnIndex
 			})
 

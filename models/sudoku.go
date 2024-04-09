@@ -1,31 +1,38 @@
 package models
 
-import "github.com/beevik/guid"
+import (
+	"github.com/Michu8258/kangaroo/types"
+	"github.com/beevik/guid"
+)
+
+// TODO - introduce serializable sudoku DTO that will be possible to Convert to full Sudoku object
 
 type SudokuCell struct {
-	Id               guid.Guid      `json:"id"`
-	Value            *int           `json:"value"`
-	PotentialValues  *[]int         `json:"potentialValues"`
-	IndexRowInBox    int8           `json:"indexRowInBox"`
-	IndexColumnInBox int8           `json:"indexColumnInBox"`
-	Box              *SudokuBox     `json:"box"`
-	MemberOfLines    *[]*SudokuLine `json:"memberOfLines"`
+	Id               guid.Guid                       `json:"id"`
+	Value            *int                            `json:"value"`
+	PotentialValues  *types.GenericSlice[int]        `json:"potentialValues"`
+	IndexRowInBox    int8                            `json:"indexRowInBox"`
+	IndexColumnInBox int8                            `json:"indexColumnInBox"`
+	Box              *SudokuBox                      `json:"box"`
+	MemberOfLines    types.GenericSlice[*SudokuLine] `json:"memberOfLines"`
 }
 
 type SudokuLine struct {
-	Cells []*SudokuCell `json:"cells"`
+	Cells types.GenericSlice[*SudokuCell] `json:"cells"`
 }
 
 type SudokuBox struct {
-	Id          guid.Guid     `json:"id"`
-	Disabled    bool          `json:"disabled"`
-	IndexRow    int8          `json:"indexRow"`
-	IndexColumn int8          `json:"indexColumn"`
-	Cells       []*SudokuCell `json:"cells"`
+	Id          guid.Guid                       `json:"id"`
+	Disabled    bool                            `json:"disabled"`
+	IndexRow    int8                            `json:"indexRow"`
+	IndexColumn int8                            `json:"indexColumn"`
+	Cells       types.GenericSlice[*SudokuCell] `json:"cells"`
 }
 
 type SubSudoku struct {
-	Boxes []*SudokuBox `json:"boxes"`
+	Boxes                 types.GenericSlice[*SudokuBox] `json:"boxes"`
+	TopLeftBoxRowIndex    int8                           `json:"topLeftBoxRowIndex"`
+	TopLeftBoxColumnIndex int8                           `json:"topLeftBoxColumnIndex"`
 }
 
 type SudokuLayout struct {
@@ -34,8 +41,8 @@ type SudokuLayout struct {
 }
 
 type Sudoku struct {
-	BoxSize    int8         `json:"boxSize"`
-	Layout     SudokuLayout `json:"layout"`
-	Boxes      []*SudokuBox `json:"boxes"`
-	SubSudokus []*SubSudoku `json:"subSudokus"`
+	BoxSize    int8                           `json:"boxSize"`
+	Layout     SudokuLayout                   `json:"layout"`
+	Boxes      types.GenericSlice[*SudokuBox] `json:"boxes"`
+	SubSudokus types.GenericSlice[*SubSudoku] `json:"subSudokus"`
 }

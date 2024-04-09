@@ -25,9 +25,24 @@ func main() {
 	}
 
 	fmt.Println("Hello kangaroo")
-	fmt.Println(rawSudokuData.Boxes[0].Cells[0].Id.String())
-	fmt.Println(rawSudokuData.Boxes[0].Cells[0].Value)
-	fmt.Println(rawSudokuData.Boxes[0].Cells[0].PotentialValues)
+	fmt.Println("Amount of subsudokus", len(rawSudokuData.SubSudokus))
+	fmt.Println("Data for cell in the center")
+	middleBox := rawSudokuData.SubSudokus[0].Boxes[4]
+	fmt.Println(middleBox)
+	middleCell := middleBox.Cells[4]
+	fmt.Println(middleCell)
+	fmt.Println("lines count", len(middleCell.MemberOfLines))
+	for index, line := range middleCell.MemberOfLines {
+		fmt.Print("LINE", index, "\t")
+		for _, cell := range line.Cells {
+			if cell.Value != nil {
+				fmt.Print(*cell.Value, " ")
+			} else {
+				fmt.Print(0, " ")
+			}
+		}
+		fmt.Println()
+	}
 }
 
 func createSettings() *models.Settings {
