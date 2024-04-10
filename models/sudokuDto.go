@@ -57,7 +57,7 @@ func (sudokuDto *SudokuDTO) ToSudoku() *Sudoku {
 				Id:               *guid.New(),
 				Value:            sudokuCellDto.Value,
 				IsInputValue:     sudokuCellDto.Value != nil,
-				PotentialValues:  &types.GenericSlice[int]{},
+				PotentialValues:  nil,
 				IndexRowInBox:    sudokuCellDto.IndexRowInBox,
 				IndexColumnInBox: sudokuCellDto.IndexColumnInBox,
 				Box:              nil,

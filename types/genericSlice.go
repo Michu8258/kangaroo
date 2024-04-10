@@ -1,6 +1,10 @@
 package types
 
-type GenericSlice[T interface{}] []T
+import (
+	"slices"
+)
+
+type GenericSlice[T comparable] []T
 
 func (slice GenericSlice[T]) Where(predicate func(T) bool) GenericSlice[T] {
 	result := GenericSlice[T]{}
@@ -12,6 +16,24 @@ func (slice GenericSlice[T]) Where(predicate func(T) bool) GenericSlice[T] {
 	}
 
 	return result
+}
+
+func (slice GenericSlice[T]) Intersect(comparisionTarget GenericSlice[T]) GenericSlice[T] {
+	commonItems := GenericSlice[T]{}
+
+	for _, v := range slice {
+		if slices.Contains(comparisionTarget, v) {
+			commonItems = append(commonItems, v)
+		}
+	}
+
+	for _, v := range comparisionTarget {
+		if slices.Contains(slice, v) && !slices.Contains(commonItems, v) {
+			commonItems = append(commonItems, v)
+		}
+	}
+
+	return commonItems
 }
 
 func (slice GenericSlice[T]) FirstOrDefault(defaultValue T, predicate func(T) bool) T {

@@ -5,4 +5,5 @@ type Settings struct {
 	MaximumLayoutSizeInclusive int8
 	MinimumBoxSizeInclusive    int8
 	MaximumBoxSizeInclusive    int8
+	UseDebugPrints             bool
 }
