@@ -10,13 +10,13 @@ import (
 
 // ReadFromFile reads raw sudoku data object from file with specified path.
 // The path can be either relative (to main.go) or absolute.
-func ReadFromFile(path string) (*models.Sudoku, error) {
+func ReadFromFile(path string) (*models.SudokuDTO, error) {
 	sudokuDataBytes, err := os.ReadFile(path)
 	if err != nil {
 		log.Println("failed to read sudoku data file", err)
 		return nil, err
 	}
-	sudoku := models.Sudoku{}
+	sudoku := models.SudokuDTO{}
 
 	err = json.Unmarshal(sudokuDataBytes, &sudoku)
 	if err != nil {

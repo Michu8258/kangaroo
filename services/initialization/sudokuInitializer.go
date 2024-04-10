@@ -4,23 +4,27 @@ import (
 	"github.com/Michu8258/kangaroo/models"
 )
 
+// InitializeSudoku executes initialization of sudoku puzzle describing object.
+// That includes: Precomputing initial data, assigning circular references in
+// sudoku object, constructing subsudokus and validation of input data.
 func InitializeSudoku(sudoku *models.Sudoku, settings *models.Settings) []error {
-	err := initializeRawData(sudoku)
+	errs := []error{}
+
+	errs = append(errs, validateRawData(sudoku, settings)...)
+	if len(errs) >= 1 {
+		return errs
+	}
+
+	err := assignSudokuReferences(sudoku)
 	if err != nil {
-		return []error{err}
+		errs = append(errs, err)
+		return errs
 	}
 
-	errors := validateRawData(sudoku, settings)
-	if len(errors) >= 1 {
-		return errors
+	errs = append(errs, validateSudokuValues(sudoku)...)
+	if len(errs) >= 1 {
+		return errs
 	}
 
-	err = assignSudokuReferences(sudoku)
-	if err != nil {
-		return []error{err}
-	}
-
-	// validate sudoku corectness
-
-	return []error{}
+	return errs
 }

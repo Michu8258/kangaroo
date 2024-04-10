@@ -39,7 +39,7 @@ func buildMembersOfLines(sudoku *models.Sudoku) error {
 			sudoku,
 			subSudoku,
 			cellsInLineCount,
-			"column",
+			models.SudokuLineTypeRow,
 			func(firstDimensionIndex, secondDimensionIndex int8) cellSearchParams {
 				return cellSearchParams{
 					overallRowIndex:    secondDimensionIndex,
@@ -56,7 +56,7 @@ func buildMembersOfLines(sudoku *models.Sudoku) error {
 			sudoku,
 			subSudoku,
 			cellsInLineCount,
-			"row",
+			models.SudokuLineTypeRow,
 			func(firstDimensionIndex, secondDimensionIndex int8) cellSearchParams {
 				return cellSearchParams{
 					overallRowIndex:    firstDimensionIndex,
@@ -77,7 +77,10 @@ func iterateRowsColumnsLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku,
 
 	var firstDimensionIndex int8 = 0
 	for firstDimensionIndex = 0; firstDimensionIndex < cellsInLineCount; firstDimensionIndex++ {
-		sudokuColumn := &models.SudokuLine{}
+		sudokuLine := &models.SudokuLine{
+			LineType:     lineType,
+			ViolatesRule: false,
+		}
 		var secondDimensionIndex int8 = 0
 
 		for secondDimensionIndex = 0; secondDimensionIndex < cellsInLineCount; secondDimensionIndex++ {
@@ -89,10 +92,12 @@ func iterateRowsColumnsLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku,
 			}
 
 			// adding cell to the line
-			sudokuColumn.Cells = append(sudokuColumn.Cells, cellReference)
+			sudokuLine.Cells = append(sudokuLine.Cells, cellReference)
 			// adding line data to each cell
-			cellReference.MemberOfLines = append(cellReference.MemberOfLines, sudokuColumn)
+			cellReference.MemberOfLines = append(cellReference.MemberOfLines, sudokuLine)
 		}
+
+		subSudoku.ChildLines = append(subSudoku.ChildLines, sudokuLine)
 	}
 
 	return nil

@@ -16,18 +16,19 @@ func main() {
 	}
 
 	settings := createSettings()
-	errs := initialization.InitializeSudoku(rawSudokuData, settings)
+	sudoku := rawSudokuData.ToSudoku()
+	errs := initialization.InitializeSudoku(sudoku, settings)
 	if len(errs) >= 1 {
 		for _, err := range errs {
 			log.Println(err)
 		}
-		log.Fatal("Failed to initialize the sudoku object")
+		return
 	}
 
 	fmt.Println("Hello kangaroo")
-	fmt.Println("Amount of subsudokus", len(rawSudokuData.SubSudokus))
+	fmt.Println("Amount of subsudokus", len(sudoku.SubSudokus))
 	fmt.Println("Data for cell in the center")
-	middleBox := rawSudokuData.SubSudokus[0].Boxes[4]
+	middleBox := sudoku.SubSudokus[0].Boxes[4]
 	fmt.Println(middleBox)
 	middleCell := middleBox.Cells[4]
 	fmt.Println(middleCell)
@@ -43,6 +44,7 @@ func main() {
 		}
 		fmt.Println()
 	}
+	fmt.Println("subsudoku lines count", len(sudoku.SubSudokus[0].ChildLines))
 }
 
 func createSettings() *models.Settings {

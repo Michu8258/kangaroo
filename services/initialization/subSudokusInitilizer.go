@@ -111,6 +111,7 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 		Boxes:                 subSudokuBoxes,
 		TopLeftBoxRowIndex:    startRowIndex,
 		TopLeftBoxColumnIndex: startColumnIndex,
+		ChildLines:            []*models.SudokuLine{},
 	})
 	return nil
 }
