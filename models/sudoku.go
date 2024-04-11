@@ -23,6 +23,7 @@ type SudokuLine struct {
 	Cells        types.GenericSlice[*SudokuCell]
 	LineType     string
 	ViolatesRule bool
+	SubsudokuId  guid.Guid
 }
 
 type SudokuBox struct {
@@ -35,6 +36,7 @@ type SudokuBox struct {
 }
 
 type SubSudoku struct {
+	Id                    guid.Guid
 	Boxes                 types.GenericSlice[*SudokuBox]
 	TopLeftBoxRowIndex    int8
 	TopLeftBoxColumnIndex int8

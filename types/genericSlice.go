@@ -77,3 +77,14 @@ func (slice GenericSlice[T]) Any(predicate func(T) bool) bool {
 
 	return false
 }
+
+func (slice GenericSlice[T]) All(predicate func(T) bool) bool {
+	for _, v := range slice {
+		isMatching := predicate(v)
+		if !isMatching {
+			return false
+		}
+	}
+
+	return true
+}

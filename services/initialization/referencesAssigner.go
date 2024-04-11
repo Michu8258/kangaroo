@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/types"
 )
 
 type cellSearchParams struct {
@@ -39,7 +40,7 @@ func buildMembersOfLines(sudoku *models.Sudoku) error {
 			sudoku,
 			subSudoku,
 			cellsInLineCount,
-			models.SudokuLineTypeRow,
+			models.SudokuLineTypeColumn,
 			func(firstDimensionIndex, secondDimensionIndex int8) cellSearchParams {
 				return cellSearchParams{
 					overallRowIndex:    secondDimensionIndex,
@@ -78,8 +79,10 @@ func iterateRowsColumnsLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku,
 	var firstDimensionIndex int8 = 0
 	for firstDimensionIndex = 0; firstDimensionIndex < cellsInLineCount; firstDimensionIndex++ {
 		sudokuLine := &models.SudokuLine{
+			Cells:        types.GenericSlice[*models.SudokuCell]{},
 			LineType:     lineType,
 			ViolatesRule: false,
+			SubsudokuId:  subSudoku.Id,
 		}
 		var secondDimensionIndex int8 = 0
 

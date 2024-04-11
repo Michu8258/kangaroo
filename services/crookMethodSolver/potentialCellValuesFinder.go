@@ -36,8 +36,12 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 					errs = append(errs, err)
 				}
 
-				// then looking for every row/column (line) containing given cell
-				for _, subSudokuLine := range subSudokuBoxCell.MemberOfLines {
+				// then looking for every row/column (line) containing given cell in current subsudoku
+				linesWithinSubsudoku := subSudokuBoxCell.MemberOfLines.Where(func(l *models.SudokuLine) bool {
+					return l.SubsudokuId == subSudoku.Id
+				})
+
+				for _, subSudokuLine := range linesWithinSubsudoku {
 					err = findPotentialValuesForCell(
 						subSudokuBoxCell,
 						subSudokuLine.Cells,

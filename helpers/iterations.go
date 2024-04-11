@@ -7,7 +7,7 @@ import (
 )
 
 // IterateSubSudokusBoxesRowsCells iterates through all subsudokus and then throug
-// every box, forst cell of each row, first cell of each column within the sub sudoku.
+// every box, first cell of each row, first cell of each column within the sub sudoku.
 // You can provide all actions or only one for example for iterating through boxes.
 // terminateOnError flag breaks loop execution if any error returned from any of the
 // provided actions will not be nil.
@@ -32,7 +32,7 @@ func IterateSubSudokusBoxesRowsCells(sudoku *models.Sudoku,
 		topLeftSubSudokuBoxAbsoluteRowIndex := subSudoku.TopLeftBoxRowIndex
 		topLeftSubSudokuBoxAbsoluteColumnIndex := subSudoku.TopLeftBoxColumnIndex
 
-		// then we walidate rows
+		// then we validate rows
 		if rowAction != nil {
 			action := *rowAction
 			var boxRowIndex int8 = 0
@@ -59,7 +59,11 @@ func IterateSubSudokusBoxesRowsCells(sudoku *models.Sudoku,
 						return fmt.Errorf("failed to locate sudoku cell")
 					}
 
-					for _, line := range sudokuCell.MemberOfLines {
+					rowsWithinSubsudoku := sudokuCell.MemberOfLines.Where(func(l *models.SudokuLine) bool {
+						return l.SubsudokuId == subSudoku.Id && l.LineType == models.SudokuLineTypeRow
+					})
+
+					for _, line := range rowsWithinSubsudoku {
 						err := action(line)
 						if err != nil && terminateOnError {
 							return err
@@ -96,7 +100,11 @@ func IterateSubSudokusBoxesRowsCells(sudoku *models.Sudoku,
 						return fmt.Errorf("failed to locate sudoku cell")
 					}
 
-					for _, line := range sudokuCell.MemberOfLines {
+					columnsWithinSubsudoku := sudokuCell.MemberOfLines.Where(func(l *models.SudokuLine) bool {
+						return l.SubsudokuId == subSudoku.Id && l.LineType == models.SudokuLineTypeColumn
+					})
+
+					for _, line := range columnsWithinSubsudoku {
 						err := action(line)
 						if err != nil && terminateOnError {
 							return err

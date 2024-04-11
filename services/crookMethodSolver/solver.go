@@ -2,6 +2,7 @@ package crookMethodSolver
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
 )
@@ -21,20 +22,32 @@ func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (boo
 	}
 
 	// preemptive sets (Crook)
-	atLeastOnePreemptiveSetManaged := true
-	for atLeastOnePreemptiveSetManaged {
-		manageSuccess, err := executePreemptiveSetsLogic(sudoku)
+	for {
+		setManagedSuccessfully, atLeastOneCellWithNoPotentialValues, err :=
+			executePreemptiveSetsLogic(sudoku, settings)
+
 		if err != nil {
 			errs = append(errs, err)
 			return false, errs
 		}
 
-		atLeastOnePreemptiveSetManaged = manageSuccess
-		if atLeastOnePreemptiveSetManaged {
-			atLeastOneValueAssigned := assignCertainValues(sudoku)
-			if atLeastOneValueAssigned {
-				SolveWithCrookMethod(sudoku, settings)
+		if atLeastOneCellWithNoPotentialValues {
+			if settings.UseDebugPrints {
+				fmt.Println("At least one cell with no potential value found.")
 			}
+			break
+		}
+
+		if !setManagedSuccessfully {
+			if settings.UseDebugPrints {
+				fmt.Println("No preemptive set successfully processed (probably not found).")
+			}
+			break
+		}
+
+		atLeastOneValueAssigned := assignCertainValues(sudoku)
+		if atLeastOneValueAssigned {
+			SolveWithCrookMethod(sudoku, settings)
 		}
 	}
 

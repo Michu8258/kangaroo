@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/beevik/guid"
 )
 
 // InitializeSubSudokus sets sub-sudokus data in the main sudoku
@@ -20,7 +21,7 @@ func initializeSubSudokus(sudoku *models.Sudoku) []error {
 
 	// Since sudoku puzzle may contain many sub-sudokus (and every sub-sudoku)
 	// is a square of sudoku boxes, we are marking minimum and maximum box
-	// indexes for the top left box of a subsudoku. This will help us
+	// absolute indexes for the top left box of a subsudoku. This will help us
 	// check if rest of required boxes for potential sub sudoku are in place.
 	var minimumRowIndex int8 = 0
 	maximumRowIndex := sudoku.Layout.Height - expectedSize
@@ -108,6 +109,7 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 
 	// we found all required boxes to build a sub-sudoku and all of them are enabled (NOT disabled)
 	sudoku.SubSudokus = append(sudoku.SubSudokus, &models.SubSudoku{
+		Id:                    *guid.New(),
 		Boxes:                 subSudokuBoxes,
 		TopLeftBoxRowIndex:    startRowIndex,
 		TopLeftBoxColumnIndex: startColumnIndex,
