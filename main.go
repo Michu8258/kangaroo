@@ -14,7 +14,8 @@ func main() {
 	fmt.Println("KANGAROO")
 
 	settings := createSettings()
-	rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/simple01.json")
+	// rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/simple01.json")
+	rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/hard01.json")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -30,13 +31,15 @@ func main() {
 
 	fmt.Println("Amount of subSudokus", len(sudoku.SubSudokus))
 
-	errs = crook.SolveWithCrookMethod(sudoku, settings)
+	solved, errs := crook.SolveWithCrookMethod(sudoku, settings)
 	if len(errs) >= 1 {
 		for _, err := range errs {
 			log.Println(err)
 		}
 		return
 	}
+
+	fmt.Println("Is sudoku solved:", solved)
 }
 
 func createSettings() *models.Settings {

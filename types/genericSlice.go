@@ -6,18 +6,6 @@ import (
 
 type GenericSlice[T comparable] []T
 
-func (slice GenericSlice[T]) Where(predicate func(T) bool) GenericSlice[T] {
-	result := GenericSlice[T]{}
-	for _, v := range slice {
-		isMatching := predicate(v)
-		if isMatching {
-			result = append(result, v)
-		}
-	}
-
-	return result
-}
-
 func (slice GenericSlice[T]) Intersect(comparisionTarget GenericSlice[T]) GenericSlice[T] {
 	commonItems := GenericSlice[T]{}
 
@@ -34,6 +22,38 @@ func (slice GenericSlice[T]) Intersect(comparisionTarget GenericSlice[T]) Generi
 	}
 
 	return commonItems
+}
+
+func (slice GenericSlice[T]) EqualContent(comparisionTarget GenericSlice[T]) bool {
+	if len(slice) != len(comparisionTarget) {
+		return false
+	}
+
+	for _, value := range slice {
+		if !slices.Contains(comparisionTarget, value) {
+			return false
+		}
+	}
+
+	for _, value := range comparisionTarget {
+		if !slices.Contains(slice, value) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (slice GenericSlice[T]) Where(predicate func(T) bool) GenericSlice[T] {
+	result := GenericSlice[T]{}
+	for _, v := range slice {
+		isMatching := predicate(v)
+		if isMatching {
+			result = append(result, v)
+		}
+	}
+
+	return result
 }
 
 func (slice GenericSlice[T]) FirstOrDefault(defaultValue T, predicate func(T) bool) T {
