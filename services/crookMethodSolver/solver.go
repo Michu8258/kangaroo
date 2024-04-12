@@ -8,11 +8,15 @@ import (
 )
 
 // TODO - add documentation to all functions/methods
+// TODO - add type for solution result
+// TODO - add type for representing quess
 
+// TODO - add documentation string
 func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
 	return executeRecursiveSolution(sudoku, settings, false)
 }
 
+// TODO - add documentation string
 func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, isGuessing bool) (bool, []error) {
 	errs := []error{}
 
@@ -20,11 +24,19 @@ func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, 
 	allCellsHaveValues, eliminationErrors := executeEliminationsLogic(sudoku, settings)
 	errs = append(errs, eliminationErrors...)
 	if len(errs) >= 1 {
-		return false, errs
+		return false, errs // TODO result type
 	}
 
 	if allCellsHaveValues {
-		return handleAllCellsFilledCase(sudoku, errs, isGuessing)
+		solved, e := handleAllCellsFilledCase(sudoku, errs, isGuessing)
+		if len(e) >= 1 {
+			errs = append(errs, e...)
+			return false, errs // TODO result type
+		}
+
+		if solved {
+			return true, errs // TODO result type
+		}
 	}
 
 	// preemptive sets (Crook)
@@ -33,7 +45,7 @@ func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, 
 			executePreemptiveSetsLogic(sudoku, settings)
 		if err != nil {
 			errs = append(errs, err)
-			return false, errs
+			return false, errs // TODO result type
 		}
 
 		atLeastOneValueAssigned := setManagedSuccessfully && assignCertainValues(sudoku, settings)
@@ -43,6 +55,7 @@ func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, 
 				fmt.Println("At least one cell with no potential value found.")
 			}
 			break // todo add return with error here
+			// TODO result type
 		}
 
 		if !setManagedSuccessfully && !atLeastOneValueAssigned {
@@ -62,7 +75,7 @@ func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, 
 	// vould not violate sudoku rules. So we are guessing now.
 
 	// for now we assume that the sudoku is not solved
-	return false, errs
+	return false, errs // TODO result type
 }
 
 // executeEliminationsLogic executes simple elimination logic that may solve sudoku,
@@ -108,7 +121,7 @@ func handleAllCellsFilledCase(sudoku *models.Sudoku, errs []error, wasGuessing b
 	if ruleValidationSuccess {
 		return true, errs
 	} else {
-		if wasGuessing {
+		if !wasGuessing {
 			errs = addUnsolvableSudokuError(errs)
 		}
 		return false, errs

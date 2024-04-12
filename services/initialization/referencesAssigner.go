@@ -22,6 +22,8 @@ func assignSudokuReferences(sudoku *models.Sudoku) error {
 	return buildMembersOfLines(sudoku)
 }
 
+// assignBoxReferencesInCells assigns references of box within cells - so that
+// we can reach box reference from cell object
 func assignBoxReferencesInCells(sudoku *models.Sudoku) {
 	for _, box := range sudoku.Boxes {
 		for _, cell := range box.Cells {
@@ -30,6 +32,10 @@ func assignBoxReferencesInCells(sudoku *models.Sudoku) {
 	}
 }
 
+// buildMembersOfLines build sudoku lines objects for every cell in the sub-sudokus
+// (this operation is per sub-sudoku), assigns line type (row/column) and stores
+// references within all cells of the line - so we can perform ease checks if
+// any sudoku rule is being violated
 func buildMembersOfLines(sudoku *models.Sudoku) error {
 	cellsInLineCount := sudoku.BoxSize * sudoku.BoxSize
 
@@ -73,6 +79,8 @@ func buildMembersOfLines(sudoku *models.Sudoku) error {
 	return nil
 }
 
+// iterateRowsColumnsLines iterates through sudoku cells belonging to the same sudoku line, finds
+// sibling cells and created sudoku line objects
 func iterateRowsColumnsLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku, cellsInLineCount int8, lineType string,
 	searchParamsProvider func(firstDimensionIndex, secondDimensionIndex int8) cellSearchParams) error {
 
@@ -106,6 +114,8 @@ func iterateRowsColumnsLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku,
 	return nil
 }
 
+// iterateRowsColumnsLines locates cells required to build sudoku line object, by converting
+// local (sub-sudoku) specific indexes to absolute indexes (in the context of entire sudoku).
 func getSudokuCellReference(sudoku *models.Sudoku, subSudoku *models.SubSudoku, searchaParams cellSearchParams, lineType string) (*models.SudokuCell, error) {
 	containingBoxAbsoluteRowIndex := subSudoku.TopLeftBoxRowIndex
 	containingBoxAbsoluteColumnIndex := subSudoku.TopLeftBoxColumnIndex

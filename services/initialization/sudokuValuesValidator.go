@@ -41,6 +41,8 @@ func validateSudokuValues(sudoku *models.Sudoku) []error {
 	return errs
 }
 
+// validateCellsCollection check if every cell with value has a value within an expected range,
+// and if the value is not duplicated within cells collection (box, row, columns).
 func validateCellsCollection(boxSize int8, cells types.GenericSlice[*models.SudokuCell],
 	collectionType string, cellsErrorSetter func()) []error {
 

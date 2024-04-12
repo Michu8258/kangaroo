@@ -32,6 +32,8 @@ func validateRawData(sudoku *models.Sudoku, settings *models.Settings) []error {
 	return errs
 }
 
+// validateLayout checks sudoku layout requirements - if box size is within the accepted
+// range, layout shape, sudoku boxes and cells presence.
 func validateLayout(sudoku *models.Sudoku, settings *models.Settings) []error {
 	errs := []error{}
 
@@ -69,6 +71,8 @@ func validateLayout(sudoku *models.Sudoku, settings *models.Settings) []error {
 	return errs
 }
 
+// validateBoxesCount check if sudoku object contains exactly as many
+// sudoku boxes as required by provided sudoku layout settings
 func validateBoxesCount(sudoku *models.Sudoku) error {
 	expectedBoxesCount := int(sudoku.Layout.Height * sudoku.Layout.Width)
 	actualBoxesCount := len(sudoku.Boxes)
@@ -82,6 +86,8 @@ func validateBoxesCount(sudoku *models.Sudoku) error {
 	return nil
 }
 
+// validateBoxesPresence check if sudoku object contains all required sudoku boxes
+// with correct indexes
 func validateBoxesPresence(sudoku *models.Sudoku) []error {
 	errs := []error{}
 
@@ -116,6 +122,8 @@ func validateBoxesPresence(sudoku *models.Sudoku) []error {
 	return errs
 }
 
+// validateCellsPresence check if sudoku box contains all required sudoku cells
+// with correct indexes
 func validateCellsPresence(sudoku *models.Sudoku, box *models.SudokuBox) error {
 	expectedCellsCount := int(sudoku.BoxSize * sudoku.BoxSize)
 	actualCellsCount := len(box.Cells)
@@ -151,6 +159,8 @@ func validateCellsPresence(sudoku *models.Sudoku, box *models.SudokuBox) error {
 	return nil
 }
 
+// validateCellsInitialValues check if all sudoku cell that contain a value have
+// a value within accepted values range
 func validateCellsInitialValues(sudoku *models.Sudoku) []error {
 	errs := []error{}
 	minimumValue := 1
@@ -189,6 +199,7 @@ func validateCellsInitialValues(sudoku *models.Sudoku) []error {
 	return errs
 }
 
+// validateLayoutSizeValue check sudoku layout size requirements
 func validateLayoutSizeValue(actualSize int8, minSize int8, maxSize int8, direction string) error {
 	if actualSize < minSize || actualSize > maxSize {
 		return fmt.Errorf(

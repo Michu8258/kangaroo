@@ -65,6 +65,10 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 	return errs
 }
 
+// findPotentialValuesForCell searches for potential values that could be assigned to the
+// cell and stores those value as a slice reference inside cell object. Possible values merge
+// is performed if the same cell will be iterated for the second and nth time. Returns
+// error if any occured during processing
 func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection types.GenericSlice[*models.SudokuCell],
 	minimumCellValue int, maximumCellValue int) (errorResult error) {
 	// in cas something went wrong
@@ -104,6 +108,7 @@ func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection types.G
 	return nil
 }
 
+// printPotentialValues prints debug information to the console when called
 func printPotentialValues(sudoku *models.Sudoku) {
 	fmt.Println("==================== POTENTIAL VALUES ====================")
 
