@@ -49,23 +49,6 @@ func assignCertainValues(sudoku *models.Sudoku, settings *models.Settings) bool 
 	return valuesAssigned >= 1
 }
 
-// TODO - remove this function
-// clearPossibleValues clear all previously assigned slices
-// of potantial values in all sudoku cells.
-// func clearPossibleValues(sudoku *models.Sudoku, settings *models.Settings) {
-// 	if settings.UseDebugPrints {
-// 		fmt.Println("Clearing all potential values assigned to sudoku cells")
-// 	}
-
-// 	for _, subSudoku := range sudoku.SubSudokus {
-// 		for _, subSudokuBox := range subSudoku.Boxes {
-// 			for _, subSudokuBoxCell := range subSudokuBox.Cells {
-// 				subSudokuBoxCell.PotentialValues = nil
-// 			}
-// 		}
-// 	}
-// }
-
 // checkIfAllCellsHaveValues checks if all sudokou cells has values
 // and return true if that is the case
 func checkIfAllCellsHaveValues(sudoku *models.Sudoku, settings *models.Settings) bool {

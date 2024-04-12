@@ -54,3 +54,10 @@ type Sudoku struct {
 	Boxes      types.GenericSlice[*SudokuBox]
 	SubSudokus types.GenericSlice[*SubSudoku]
 }
+
+type SudokuValueGuess struct {
+	GuessedValue            int
+	GuessedCell             *SudokuCell
+	SubsudokuId             guid.Guid
+	PotentialValuesSnapshot map[guid.Guid]*[]int
+}

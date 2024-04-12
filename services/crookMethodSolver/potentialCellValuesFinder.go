@@ -134,7 +134,7 @@ func printPotentialValues(sudoku *models.Sudoku) {
 			for _, subSudokuBoxCell := range subSudokuBox.Cells {
 				cellCount += 1
 				fmt.Printf("Sub sudoku index: %d, cell count %d, box indices (row: %d, column: %d), "+
-					"cell indices (row: %d, column: %d), value %s, potential values %s.\n",
+					"cell indices (row: %d, column: %d), value %s, potential values %s\n",
 					subSudokuIndex,
 					cellCount,
 					subSudokuBoxCell.Box.IndexRow, subSudokuBoxCell.Box.IndexColumn,

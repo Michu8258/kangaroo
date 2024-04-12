@@ -66,16 +66,36 @@ func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, 
 		}
 
 		if atLeastOneValueAssigned {
-			return executeRecursiveSolution(sudoku, settings, false)
+			// TODO analyze the result
+			return executeRecursiveSolution(sudoku, settings, isGuessing)
 		}
 	}
 
 	// at this point, we have exhausted simple elimination method
-	// and there are no cells wirh single potential value that
-	// vould not violate sudoku rules. So we are guessing now.
+	// and there are no cells with single potential value that
+	// would not violate sudoku rules. So we are guessing now.
+	cellValueGuess, err := designateSudokuGuess(sudoku, settings)
+	if err != nil {
+		errs = append(errs, err)
+		return false, errs // TODO result type
+	}
+
+	applySudokuValueGuess(cellValueGuess)
+	result, wefwe := executeRecursiveSolution(sudoku, settings, true)
+	// TODO result type
+	fmt.Println("After", result)
+	for wef := range wefwe {
+		fmt.Println(wef)
+	}
 
 	// for now we assume that the sudoku is not solved
 	return false, errs // TODO result type
+}
+
+// applySudokuValueGuess applies guess sudoku value to the cell
+func applySudokuValueGuess(cellValueGuess *models.SudokuValueGuess) {
+	cellValueGuess.GuessedCell.PotentialValues = nil
+	cellValueGuess.GuessedCell.Value = &cellValueGuess.GuessedValue
 }
 
 // executeEliminationsLogic executes simple elimination logic that may solve sudoku,
