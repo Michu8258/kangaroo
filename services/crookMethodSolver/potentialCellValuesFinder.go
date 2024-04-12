@@ -21,7 +21,8 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 		for _, subSudokuBox := range subSudoku.Boxes {
 			for _, subSudokuBoxCell := range subSudokuBox.Cells {
 				// if cell value is a input one, we can skip checking
-				if subSudokuBoxCell.Value != nil && subSudokuBoxCell.IsInputValue {
+				if subSudokuBoxCell.Value != nil {
+					subSudokuBoxCell.PotentialValues = nil
 					continue
 				}
 
@@ -105,18 +106,36 @@ func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection types.G
 
 func printPotentialValues(sudoku *models.Sudoku) {
 	fmt.Println("==================== POTENTIAL VALUES ====================")
+
+	cellValuePrinter := func(v *int) string {
+		if v == nil {
+			return "-"
+		}
+
+		return fmt.Sprintf("%v", *v)
+	}
+
+	potentialValuesPrinter := func(potentialValues *types.GenericSlice[int]) string {
+		if potentialValues == nil {
+			return "-"
+		}
+
+		return fmt.Sprintf("%v", *potentialValues)
+	}
+
 	for subSudokuIndex, subSudoku := range sudoku.SubSudokus {
 		cellCount := 0
 		for _, subSudokuBox := range subSudoku.Boxes {
 			for _, subSudokuBoxCell := range subSudokuBox.Cells {
 				cellCount += 1
 				fmt.Printf("Sub sudoku index: %d, cell count %d, box indices (row: %d, column: %d), "+
-					"cell indices (row: %d, column: %d), potential values %v.\n",
+					"cell indices (row: %d, column: %d), value %s, potential values %s.\n",
 					subSudokuIndex,
 					cellCount,
 					subSudokuBoxCell.Box.IndexRow, subSudokuBoxCell.Box.IndexColumn,
 					subSudokuBoxCell.IndexRowInBox, subSudokuBoxCell.IndexColumnInBox,
-					subSudokuBoxCell.PotentialValues)
+					cellValuePrinter(subSudokuBoxCell.Value),
+					potentialValuesPrinter(subSudokuBoxCell.PotentialValues))
 			}
 		}
 	}

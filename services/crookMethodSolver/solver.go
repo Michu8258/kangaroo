@@ -7,7 +7,13 @@ import (
 	"github.com/Michu8258/kangaroo/models"
 )
 
+// TODO - add documentation to all functions/methods
+
 func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
+	return executeRecursiveSolution(sudoku, settings, false)
+}
+
+func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, isGuessing bool) (bool, []error) {
 	errs := []error{}
 
 	// simple sudokus that can be hamdled with pure elimination logic
@@ -18,36 +24,36 @@ func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (boo
 	}
 
 	if allCellsHaveValues {
-		return handleAllCellsFilledCase(sudoku, errs)
+		return handleAllCellsFilledCase(sudoku, errs, isGuessing)
 	}
 
 	// preemptive sets (Crook)
 	for {
 		setManagedSuccessfully, atLeastOneCellWithNoPotentialValues, err :=
 			executePreemptiveSetsLogic(sudoku, settings)
-
 		if err != nil {
 			errs = append(errs, err)
 			return false, errs
 		}
 
+		atLeastOneValueAssigned := setManagedSuccessfully && assignCertainValues(sudoku, settings)
+
 		if atLeastOneCellWithNoPotentialValues {
 			if settings.UseDebugPrints {
 				fmt.Println("At least one cell with no potential value found.")
 			}
-			break
+			break // todo add return with error here
 		}
 
-		if !setManagedSuccessfully {
+		if !setManagedSuccessfully && !atLeastOneValueAssigned {
 			if settings.UseDebugPrints {
 				fmt.Println("No preemptive set successfully processed (probably not found).")
 			}
 			break
 		}
 
-		atLeastOneValueAssigned := assignCertainValues(sudoku)
 		if atLeastOneValueAssigned {
-			SolveWithCrookMethod(sudoku, settings)
+			return executeRecursiveSolution(sudoku, settings, false)
 		}
 	}
 
@@ -64,9 +70,9 @@ func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (boo
 // if all cells has assigned certain values and slice of errors
 func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
 	errs := []error{}
-	noMoreValuesToEliminate := false
+	assignmentsExhausted := false
 
-	for !noMoreValuesToEliminate {
+	for !assignmentsExhausted {
 		//assign potential values
 		errs = append(errs, assignCellsPotentialValues(sudoku, settings)...)
 		if len(errs) >= 1 {
@@ -74,10 +80,9 @@ func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) 
 		}
 
 		// try to assign certain values
-		atLeastOneValueAssigned := assignCertainValues(sudoku)
+		atLeastOneValueAssigned := assignCertainValues(sudoku, settings)
 		if atLeastOneValueAssigned {
-			noMoreValuesToEliminate = false
-			clearPossibleValues(sudoku)
+			assignmentsExhausted = false
 			allCellsFilled := checkIfAllCellsHaveValues(sudoku, settings)
 			if allCellsFilled {
 				return true, errs
@@ -85,7 +90,7 @@ func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) 
 			continue
 		}
 
-		noMoreValuesToEliminate = true
+		assignmentsExhausted = true
 	}
 
 	return false, errs
@@ -93,7 +98,7 @@ func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) 
 
 // handleAllCellsFilledCase verifies if sudoku is correctly solved. Precondition:
 // this function expects that all cells of a sudoke are filled.
-func handleAllCellsFilledCase(sudoku *models.Sudoku, errs []error) (bool, []error) {
+func handleAllCellsFilledCase(sudoku *models.Sudoku, errs []error, wasGuessing bool) (bool, []error) {
 	ruleValidationSuccess, err := validateSudokuRules(sudoku)
 	if err != nil {
 		errs = append(errs, err)
@@ -103,7 +108,9 @@ func handleAllCellsFilledCase(sudoku *models.Sudoku, errs []error) (bool, []erro
 	if ruleValidationSuccess {
 		return true, errs
 	} else {
-		errs = addUnsolvableSudokuError(errs)
+		if wasGuessing {
+			errs = addUnsolvableSudokuError(errs)
+		}
 		return false, errs
 	}
 }

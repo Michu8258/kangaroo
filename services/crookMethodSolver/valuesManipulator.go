@@ -10,8 +10,12 @@ import (
 // values is when there is only one potential value in slice of potential
 // values in given cell). Returns true if at least one such case was found,
 // otherwise returns false.
-func assignCertainValues(sudoku *models.Sudoku) bool {
-	atLeastOneAssigned := false
+func assignCertainValues(sudoku *models.Sudoku, settings *models.Settings) bool {
+	valuesAssigned := 0
+
+	if settings.UseDebugPrints {
+		fmt.Println("Starting certain values assignment - based of potential values")
+	}
 
 	for _, subSudoku := range sudoku.SubSudokus {
 		for _, subSudokuBox := range subSudoku.Boxes {
@@ -19,26 +23,48 @@ func assignCertainValues(sudoku *models.Sudoku) bool {
 				if subSudokuBoxCell.Value == nil && !subSudokuBoxCell.IsInputValue &&
 					subSudokuBoxCell.PotentialValues != nil && len(*subSudokuBoxCell.PotentialValues) == 1 {
 					subSudokuBoxCell.Value = &((*subSudokuBoxCell.PotentialValues)[0])
-					atLeastOneAssigned = true
+					subSudokuBoxCell.PotentialValues = nil
+					valuesAssigned += 1
+
+					if settings.UseDebugPrints {
+						fmt.Printf("Assigned certain cell value: %v. Box absolute indexes(row: %d, column: %d), "+
+							"cell indexes(row: %d, column: %d).\n",
+							*subSudokuBoxCell.Value,
+							subSudokuBoxCell.Box.IndexRow, subSudokuBoxCell.Box.IndexColumn,
+							subSudokuBoxCell.IndexRowInBox, subSudokuBoxCell.IndexColumnInBox)
+					}
 				}
 			}
 		}
 	}
 
-	return atLeastOneAssigned
-}
-
-// clearPossibleValues clear all previously assigned slices
-// of potantial values in all sudoku cells.
-func clearPossibleValues(sudoku *models.Sudoku) {
-	for _, subSudoku := range sudoku.SubSudokus {
-		for _, subSudokuBox := range subSudoku.Boxes {
-			for _, subSudokuBoxCell := range subSudokuBox.Cells {
-				subSudokuBoxCell.PotentialValues = nil
-			}
+	if settings.UseDebugPrints {
+		if valuesAssigned >= 1 {
+			fmt.Println("Certain values assignment finished - assigned values count: ", valuesAssigned)
+		} else {
+			fmt.Println("Certain values assignment finished - no value assigned")
 		}
 	}
+
+	return valuesAssigned >= 1
 }
+
+// TODO - remove this function
+// clearPossibleValues clear all previously assigned slices
+// of potantial values in all sudoku cells.
+// func clearPossibleValues(sudoku *models.Sudoku, settings *models.Settings) {
+// 	if settings.UseDebugPrints {
+// 		fmt.Println("Clearing all potential values assigned to sudoku cells")
+// 	}
+
+// 	for _, subSudoku := range sudoku.SubSudokus {
+// 		for _, subSudokuBox := range subSudoku.Boxes {
+// 			for _, subSudokuBoxCell := range subSudokuBox.Cells {
+// 				subSudokuBoxCell.PotentialValues = nil
+// 			}
+// 		}
+// 	}
+// }
 
 // checkIfAllCellsHaveValues checks if all sudokou cells has values
 // and return true if that is the case

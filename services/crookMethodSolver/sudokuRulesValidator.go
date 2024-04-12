@@ -12,7 +12,7 @@ import (
 // validateSudokuRules validates sudoku cells values against sudoku rules.
 // If no rule is brokn, then true will be returned, otherwise, false.
 // In case a sudoku with all filled cells values is provided, true as a result
-// of this dunction will indicate correct sudoku solution.
+// of this function will indicate correct sudoku solution.
 func validateSudokuRules(sudoku *models.Sudoku) (bool, error) {
 	validationError := errors.New("validation error")
 

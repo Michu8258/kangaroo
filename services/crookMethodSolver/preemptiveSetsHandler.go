@@ -246,8 +246,20 @@ func processPreemptiveSet(preemptiveSet *preemptiveSet, settings *models.Setting
 				}
 			}
 
+			if settings.UseDebugPrints {
+				fmt.Printf("Replacing existing potential values %v, with truncagted slice %v."+
+					"Box absolute indexes (row: %d, column: %d), cell in box indexes (row: %d, column: %d).\n",
+					*cell.PotentialValues, truncatedPotentialValues,
+					cell.Box.IndexRow, cell.Box.IndexColumn,
+					cell.IndexRowInBox, cell.IndexColumnInBox)
+			}
+
 			cell.PotentialValues = &truncatedPotentialValues
 			appliedAnyPotentialValuesChange = true
+
+			if settings.UseDebugPrints {
+				fmt.Printf("Potential values of cell after replacement: %v.\n", *cell.PotentialValues)
+			}
 		}
 	}
 
