@@ -40,6 +40,7 @@ func (sudokuDto *SudokuDTO) ToSudoku() *Sudoku {
 		},
 		Boxes:      types.GenericSlice[*SudokuBox]{},
 		SubSudokus: []*SubSudoku{},
+		Result:     Unspecified,
 	}
 
 	for _, sudokuBoxDto := range sudokuDto.Boxes {

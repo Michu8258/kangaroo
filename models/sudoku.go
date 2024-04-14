@@ -53,6 +53,7 @@ type Sudoku struct {
 	Layout     SudokuLayout
 	Boxes      types.GenericSlice[*SudokuBox]
 	SubSudokus types.GenericSlice[*SubSudoku]
+	Result     SudokuResultType
 }
 
 type SudokuValueGuess struct {
@@ -61,3 +62,13 @@ type SudokuValueGuess struct {
 	SubsudokuId             guid.Guid
 	PotentialValuesSnapshot map[guid.Guid]*[]int
 }
+
+type SudokuResultType int8
+
+const (
+	Unspecified         SudokuResultType = 0
+	SuccessfullSolution SudokuResultType = 1
+	Failure             SudokuResultType = 2
+	InvalidGuess        SudokuResultType = 3
+	UnsolvableSudoku    SudokuResultType = 4
+)

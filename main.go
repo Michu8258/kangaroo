@@ -8,6 +8,7 @@ import (
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
 	"github.com/Michu8258/kangaroo/services/dataInputs"
 	"github.com/Michu8258/kangaroo/services/initialization"
+	"github.com/Michu8258/kangaroo/services/printers"
 )
 
 func main() {
@@ -15,8 +16,8 @@ func main() {
 
 	settings := createSettings()
 	// rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/simple01.json")
-	// rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/hard01.json")
-	rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/tutorial01.json")
+	// rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/tutorial01.json")
+	rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/hard01.json")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -30,6 +31,7 @@ func main() {
 		return
 	}
 
+	printers.PrintSudoku(sudoku, settings)
 	fmt.Println("Amount of subSudokus", len(sudoku.SubSudokus))
 
 	solved, errs := crook.SolveWithCrookMethod(sudoku, settings)
@@ -41,23 +43,16 @@ func main() {
 	}
 
 	fmt.Println("Is sudoku solved:", solved)
-	for _, box := range sudoku.Boxes {
-		for _, cell := range box.Cells {
-			if cell.Value == nil {
-				fmt.Println("(", cell.Box.IndexRow, cell.Box.IndexColumn, "), (", cell.IndexRowInBox, cell.Box.IndexColumn, ") -")
-			} else {
-				fmt.Println("(", cell.Box.IndexRow, cell.Box.IndexColumn, "), (", cell.IndexRowInBox, cell.Box.IndexColumn, ")", *cell.Value)
-			}
-		}
-	}
+	printers.PrintSudoku(sudoku, settings)
 }
 
 func createSettings() *models.Settings {
 	return &models.Settings{
-		MinimumLayoutSizeInclusive: 2,
-		MaximumLayoutSizeInclusive: 10,
-		MinimumBoxSizeInclusive:    2,
-		MaximumBoxSizeInclusive:    5,
-		UseDebugPrints:             true,
+		MinimumLayoutSizeInclusive:       2,
+		MaximumLayoutSizeInclusive:       10,
+		MinimumBoxSizeInclusive:          2,
+		MaximumBoxSizeInclusive:          5,
+		UseDebugPrints:                   false,
+		SudokuPrintoutValuePaddingLength: 1,
 	}
 }

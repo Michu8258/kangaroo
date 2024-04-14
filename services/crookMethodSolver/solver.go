@@ -2,17 +2,9 @@ package crookMethodSolver
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Michu8258/kangaroo/models"
-)
-
-type sudokuResultType int8
-
-const (
-	SuccessfullSolution sudokuResultType = 0
-	Failure             sudokuResultType = 1
-	InvalidGuess        sudokuResultType = 2
-	UnsolvableSudoku    sudokuResultType = 3
 )
 
 type sudokuRecursionData struct {
@@ -23,27 +15,46 @@ type sudokuRecursionData struct {
 }
 
 type sudokuSolutionResult struct {
-	ResultType sudokuResultType
+	ResultType models.SudokuResultType
 	Errors     []error
 }
 
-// TODO - add documentation to all functions/methods
-// todo divide into functions
-// TODO - add documentation string
-func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
-	// TODO add conversion from internal result object (todo) to exposed one (todo - also to introduce)
-	result := executeRecursiveSolution(sudokuRecursionData{
+// TODO - add result printing
+// SolveWithCrookMethod tries to solve the sudoku puzzle by altering references which soduku model
+// (a parameter) is build with. Returns a boolean flag indicating if solution was found and is
+// correct, and slice of errors. Errors should not be printed to the user, they are actualy an
+// errors.
+func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (result bool, errors []error) {
+	startTime := time.Now()
+
+	defer func() {
+		duration := time.Since(startTime)
+		if settings.UseDebugPrints {
+			fmt.Printf("CROOK's method solution duration: %v\n", duration)
+		}
+
+		if err := recover(); err != nil {
+			result = false
+			errors = append(errors, fmt.Errorf("fatal error: failed to execute Crook's alrogithm. "+
+				"Underlying error: %s", err))
+		}
+	}()
+
+	solutionResult := executeRecursiveSolution(sudokuRecursionData{
 		Sudoku:         sudoku,
 		Settings:       settings,
 		IsGuessing:     false,
 		RecursionDepth: 0,
 	})
 
-	// TODO return more info like is it unsolvable sudoku for example
-	return result.ResultType == SuccessfullSolution, result.Errors
+	sudoku.Result = solutionResult.ResultType
+
+	return solutionResult.ResultType == models.SuccessfullSolution, solutionResult.Errors
 }
 
-// TODO - add documentation string
+// executeRecursiveSolution is the actual method that executes Sudoku puzzle solution with
+// Crook's algorithm.  It returns and object with collections of errors and result status
+// (successfull solution/failure/invalid guess/unsolvable sudoku)
 func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionResult {
 	defer func() {
 		if recursionData.Settings.UseDebugPrints {
@@ -58,7 +69,7 @@ func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionR
 
 	// simple sudokus that can be hamdled with pure elimination logic
 	solved, shortCircuitResult, result := executeSimpleAlgorithm(recursionData)
-	if solved || shortCircuitResult || result.ResultType == InvalidGuess {
+	if solved || shortCircuitResult || result.ResultType == models.InvalidGuess {
 		return result
 	}
 
@@ -68,7 +79,7 @@ func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionR
 			executePreemptiveSetsLogic(recursionData.Sudoku, recursionData.Settings)
 		if err != nil {
 			return sudokuSolutionResult{
-				ResultType: Failure,
+				ResultType: models.Failure,
 				Errors:     []error{err},
 			}
 		}
@@ -81,9 +92,9 @@ func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionR
 				fmt.Println("At least one cell with no potential value found.")
 			}
 
-			var result sudokuResultType = InvalidGuess
+			var result models.SudokuResultType = models.InvalidGuess
 			if !recursionData.IsGuessing {
-				result = UnsolvableSudoku
+				result = models.UnsolvableSudoku
 			}
 
 			return sudokuSolutionResult{
@@ -116,7 +127,7 @@ func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionR
 		cellToGuessExists, cellValueGuess, err := designateSudokuGuess(recursionData.Sudoku, recursionData.Settings)
 		if err != nil {
 			return sudokuSolutionResult{
-				ResultType: Failure,
+				ResultType: models.Failure,
 				Errors:     []error{err},
 			}
 		}
@@ -124,34 +135,30 @@ func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionR
 		// this means all cells have values assigned and we can validate sudoku rules and check if
 		// we solved a sudoku
 		if !cellToGuessExists {
-			// todo - duplicated code
-			ruleValidationSuccess, err := validateSudokuRules(recursionData.Sudoku)
+			allCellsHaveValues := checkIfAllCellsHaveValues(recursionData.Sudoku, recursionData.Settings)
+			ruleValidationNoError, err := validateSudokuRules(recursionData.Sudoku)
 			if err != nil {
 				return sudokuSolutionResult{
-					ResultType: Failure,
+					ResultType: models.Failure,
 					Errors:     []error{err},
 				}
 			}
 
-			if ruleValidationSuccess {
-				fmt.Println("SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!")
-			}
-
 			// if rule validation is successfull, we can assume sudoku is completely solved
 			// becuase all cells have a values assigned.
-			if ruleValidationSuccess {
+			if allCellsHaveValues && ruleValidationNoError {
 				return sudokuSolutionResult{
-					ResultType: SuccessfullSolution,
+					ResultType: models.SuccessfullSolution,
 					Errors:     []error{},
 				}
 			}
 
-			var result sudokuResultType
+			var result models.SudokuResultType
 
 			if recursionData.IsGuessing {
-				result = InvalidGuess
+				result = models.InvalidGuess
 			} else {
-				result = Failure
+				result = models.Failure
 			}
 
 			return sudokuSolutionResult{
@@ -168,11 +175,11 @@ func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionR
 			RecursionDepth: recursionData.RecursionDepth + 1,
 		})
 
-		if nestedIterationResult.ResultType == InvalidGuess {
+		if nestedIterationResult.ResultType == models.InvalidGuess {
 			err = restoreSnapshotFromGuessedValue(recursionData.Sudoku, cellValueGuess, recursionData.Settings)
 			if err != nil {
 				return sudokuSolutionResult{
-					ResultType: Failure,
+					ResultType: models.Failure,
 					Errors:     []error{err},
 				}
 			}
@@ -193,58 +200,53 @@ func executeSimpleAlgorithm(recursionData sudokuRecursionData) (bool, bool, sudo
 		recursionData.Sudoku, recursionData.Settings)
 	if len(errs) >= 1 {
 		return false, true, sudokuSolutionResult{
-			ResultType: Failure,
+			ResultType: models.Failure,
 			Errors:     errs,
-		}
-	}
-
-	if allCellsHaveValues {
-		ruleValidationSuccess, err := validateSudokuRules(recursionData.Sudoku)
-		if err != nil {
-			return false, true, sudokuSolutionResult{
-				ResultType: Failure,
-				Errors:     errs,
-			}
-		}
-
-		if ruleValidationSuccess {
-			fmt.Println("SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!")
-		}
-
-		// if rule validation is successfull, we can assume sudoku is completely solved
-		// becuase all cells have a values assigned.
-		if ruleValidationSuccess {
-			return true, true, sudokuSolutionResult{
-				ResultType: SuccessfullSolution,
-				Errors:     []error{},
-			}
-		}
-
-		var result sudokuResultType
-
-		if recursionData.IsGuessing {
-			result = InvalidGuess
-		} else {
-			result = Failure
-		}
-
-		return false, result == Failure, sudokuSolutionResult{
-			ResultType: result,
-			Errors:     []error{err},
 		}
 	}
 
 	if anyCellWithNoPotentialValues {
 		if !recursionData.IsGuessing {
 			return false, true, sudokuSolutionResult{
-				ResultType: UnsolvableSudoku,
+				ResultType: models.UnsolvableSudoku,
 				Errors:     errs,
 			}
 		}
 
 		return false, false, sudokuSolutionResult{
-			ResultType: InvalidGuess,
+			ResultType: models.InvalidGuess,
 			Errors:     errs,
+		}
+	}
+
+	ruleValidationNoError, err := validateSudokuRules(recursionData.Sudoku)
+	if err != nil {
+		return false, true, sudokuSolutionResult{
+			ResultType: models.Failure,
+			Errors:     errs,
+		}
+	}
+
+	// there is a sudoku rule validation error
+	if !ruleValidationNoError {
+		var result models.SudokuResultType
+
+		if recursionData.IsGuessing {
+			result = models.InvalidGuess
+		} else {
+			result = models.Failure
+		}
+
+		return false, result == models.Failure, sudokuSolutionResult{
+			ResultType: result,
+			Errors:     []error{err},
+		}
+	}
+
+	if allCellsHaveValues && ruleValidationNoError {
+		return true, true, sudokuSolutionResult{
+			ResultType: models.SuccessfullSolution,
+			Errors:     []error{},
 		}
 	}
 
