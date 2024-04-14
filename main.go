@@ -15,7 +15,7 @@ func main() {
 
 	settings := createSettings()
 	// rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/simple01.json")
-	//rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/hard01.json")
+	// rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/hard01.json")
 	rawSudokuData, err := dataInputs.ReadFromFile("./textConfigs/tutorial01.json")
 	if err != nil {
 		log.Fatalln(err)

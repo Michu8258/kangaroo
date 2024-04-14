@@ -28,7 +28,7 @@ type sudokuSolutionResult struct {
 }
 
 // TODO - add documentation to all functions/methods
-
+// todo divide into functions
 // TODO - add documentation string
 func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
 	// TODO add conversion from internal result object (todo) to exposed one (todo - also to introduce)
@@ -124,12 +124,17 @@ func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionR
 		// this means all cells have values assigned and we can validate sudoku rules and check if
 		// we solved a sudoku
 		if !cellToGuessExists {
+			// todo - duplicated code
 			ruleValidationSuccess, err := validateSudokuRules(recursionData.Sudoku)
 			if err != nil {
 				return sudokuSolutionResult{
 					ResultType: Failure,
 					Errors:     []error{err},
 				}
+			}
+
+			if ruleValidationSuccess {
+				fmt.Println("SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!")
 			}
 
 			// if rule validation is successfull, we can assume sudoku is completely solved
@@ -200,6 +205,10 @@ func executeSimpleAlgorithm(recursionData sudokuRecursionData) (bool, bool, sudo
 				ResultType: Failure,
 				Errors:     errs,
 			}
+		}
+
+		if ruleValidationSuccess {
+			fmt.Println("SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		}
 
 		// if rule validation is successfull, we can assume sudoku is completely solved
