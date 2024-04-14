@@ -11,9 +11,11 @@ import (
 
 // assignCellsPotentialValues assigns potential sudoku cell values.
 // Potential cell values are also known and referred tu under the name
-// of sudoku cell mark up.
-func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings) []error {
+// of sudoku cell mark up. Returns a flag indicating if any of the cells
+// has empty slice of potential values, and errir if any ocured.
+func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
 	errs := []error{}
+	anyPotentialValuesSliceIsEmpty := false
 	minimumValue := 1
 	maximumValue := int(sudoku.BoxSize * sudoku.BoxSize)
 
@@ -27,14 +29,19 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 				}
 
 				// looking in box containing given cell
-				err := findPotentialValuesForCell(
+				emptyPotVal, err := findPotentialValuesForCell(
 					subSudokuBoxCell,
 					subSudokuBoxCell.Box.Cells,
+					settings,
 					minimumValue,
 					maximumValue)
 
 				if err != nil {
 					errs = append(errs, err)
+				}
+
+				if emptyPotVal {
+					anyPotentialValuesSliceIsEmpty = true
 				}
 
 				// then looking for every row/column (line) containing given cell in current subsudoku
@@ -43,14 +50,19 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 				})
 
 				for _, subSudokuLine := range linesWithinSubsudoku {
-					err = findPotentialValuesForCell(
+					emptyPotVal, err = findPotentialValuesForCell(
 						subSudokuBoxCell,
 						subSudokuLine.Cells,
+						settings,
 						minimumValue,
 						maximumValue)
 
 					if err != nil {
 						errs = append(errs, err)
+					}
+
+					if emptyPotVal {
+						anyPotentialValuesSliceIsEmpty = true
 					}
 				}
 			}
@@ -62,15 +74,16 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 		printPotentialValues(sudoku)
 	}
 
-	return errs
+	return anyPotentialValuesSliceIsEmpty, errs
 }
 
 // findPotentialValuesForCell searches for potential values that could be assigned to the
 // cell and stores those value as a slice reference inside cell object. Possible values merge
 // is performed if the same cell will be iterated for the second and nth time. Returns
+// boolean flag indicating if the given cell has empty potential values slice, and
 // error if any occured during processing
 func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection types.GenericSlice[*models.SudokuCell],
-	minimumCellValue int, maximumCellValue int) (errorResult error) {
+	settings *models.Settings, minimumCellValue int, maximumCellValue int) (emptyPotentialValues bool, errorResult error) {
 	// in cas something went wrong
 	defer func() {
 		if err := recover(); err != nil {
@@ -97,15 +110,28 @@ func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection types.G
 	if cell.PotentialValues == nil {
 		// this is first iteration for this cell
 		cell.PotentialValues = &potentialValues
-		return nil
+		logNoPotentialValues(settings, cell)
+		return len(potentialValues) == 0, nil
 	}
 
 	// in case of another iteration for same cell, we need to merge potential values
 	// by taking a common items in both slices
 	intersection := cell.PotentialValues.Intersect(potentialValues)
 	cell.PotentialValues = &intersection
+	logNoPotentialValues(settings, cell)
 
-	return nil
+	return len(intersection) == 0, nil
+}
+
+// logNoPotentialValues log information about no potential values in
+func logNoPotentialValues(settings *models.Settings, cell *models.SudokuCell) {
+	if cell.PotentialValues != nil && len(*cell.PotentialValues) == 0 && settings.UseDebugPrints {
+		fmt.Printf(
+			"Found a cell with no potential values during assigning potential values. "+
+				"Box indexes (row: %d, column: %d), cell indexes, (row: %d, column: %d).\n",
+			cell.Box.IndexRow, cell.Box.IndexColumn,
+			cell.IndexRowInBox, cell.IndexColumnInBox)
+	}
 }
 
 // printPotentialValues prints debug information to the console when called

@@ -34,6 +34,7 @@ func restoreSnapshotFromGuessedValue(sudoku *models.Sudoku, cellValueGuess *mode
 				potentialValues = append(potentialValues, pv)
 			}
 			sudokuCell.PotentialValues = &potentialValues
+			sudokuCell.Value = nil
 		}
 	}
 
@@ -45,27 +46,32 @@ func restoreSnapshotFromGuessedValue(sudoku *models.Sudoku, cellValueGuess *mode
 	})
 
 	if settings.UseDebugPrints {
-		fmt.Printf("Restoredpotential values snapshot. New potential values for "+
+		fmt.Printf("Restored potential values snapshot. New potential values for "+
 			"the cell: %v\n", updatedPotentialValues)
 	}
 
 	// we can assign it in guess object, because it holds reference to the actual cell
 	cellValueGuess.GuessedCell.PotentialValues = &updatedPotentialValues
+	cellValueGuess.GuessedCell.Value = nil
 
 	return nil
 }
 
 // designateSudokuGuess creates an object representing a value to guess in the sudoku puzzle.
-// returns object containing a snapshot of current state of potential vales per sudoku cell,
-// and error if offured.
-func designateSudokuGuess(sudoku *models.Sudoku, settings *models.Settings) (*models.SudokuValueGuess, error) {
+// returns boolean flag indicating if suitable cell was found, an object containing a
+// snapshot of current state of potential vales per sudoku cell, and error if offured.
+func designateSudokuGuess(sudoku *models.Sudoku, settings *models.Settings) (bool, *models.SudokuValueGuess, error) {
 	cell, subSudokuId, err := findCellWithLowestPotentialValues(sudoku, settings)
 	if err != nil {
-		return nil, err
+		return false, nil, err
+	}
+
+	if cell == nil || cell.PotentialValues == nil || len(*cell.PotentialValues) < 1 {
+		return false, nil, nil
 	}
 
 	if settings.UseDebugPrints {
-		fmt.Printf("Found cell suitable for guessing potential value of")
+		fmt.Println("Found cell suitable for guessing potential value of")
 	}
 
 	potentialValuesSnapshot := createPotentialValuesSnapshot(sudoku, settings)
@@ -85,7 +91,7 @@ func designateSudokuGuess(sudoku *models.Sudoku, settings *models.Settings) (*mo
 			guess.GuessedValue)
 	}
 
-	return guess, nil
+	return true, guess, nil
 }
 
 // findCellWithLowestPotentialValues searches for cell most suitable for being selected as
@@ -101,13 +107,22 @@ func findCellWithLowestPotentialValues(sudoku *models.Sudoku, settings *models.S
 			for _, subSudokuBoxCell := range subSudokuBox.Cells {
 
 				if subSudokuBoxCell.Value == nil && subSudokuBoxCell.PotentialValues != nil {
-					if len(*subSudokuBoxCell.PotentialValues) <= 1 {
+					if len(*subSudokuBoxCell.PotentialValues) == 0 {
 						if settings.UseDebugPrints {
-							fmt.Println("Found a cell with less than 2 potantial values " +
+							fmt.Println("Found a cell with no potantial values " +
 								"during sudoku cell guess selection.")
 						}
 
-						return nil, nil, fmt.Errorf("unexpected: cell with insufficient potential value found")
+						return nil, nil, nil
+					}
+
+					if len(*subSudokuBoxCell.PotentialValues) == 1 {
+						if settings.UseDebugPrints {
+							fmt.Println("Found a cell with exactly one potantial value " +
+								"during sudoku cell guess selection.")
+						}
+
+						return subSudokuBoxCell, &subSudokuBoxCell.Box.Id, nil
 					}
 
 					if sudokuCell == nil {
@@ -120,7 +135,7 @@ func findCellWithLowestPotentialValues(sudoku *models.Sudoku, settings *models.S
 						subSudokuId = &subSudoku.Id
 					}
 
-					// if we have cell with only 2 possible value - we have bihhest chance to guess
+					// if we have cell with only 2 possible value - we have bigest chance to guess
 					// correctly. Case of less than 2 possible values are invalid.
 					if len(*sudokuCell.PotentialValues) <= 2 {
 						return sudokuCell, subSudokuId, nil
@@ -130,8 +145,8 @@ func findCellWithLowestPotentialValues(sudoku *models.Sudoku, settings *models.S
 		}
 	}
 
-	if sudoku == nil {
-		return nil, nil, fmt.Errorf("unexpected: could not find any cell candidate to guess sudoku value")
+	if settings.UseDebugPrints && sudokuCell == nil {
+		fmt.Println("Did not find any cell suitable for guessing - perhaps there is no cell with potential values.")
 	}
 
 	return sudokuCell, subSudokuId, nil

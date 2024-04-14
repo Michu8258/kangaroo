@@ -247,7 +247,7 @@ func processPreemptiveSet(preemptiveSet *preemptiveSet, settings *models.Setting
 			}
 
 			if settings.UseDebugPrints {
-				fmt.Printf("Replacing existing potential values %v, with truncagted slice %v."+
+				fmt.Printf("Replacing existing potential values %v, with truncagted slice %v. "+
 					"Box absolute indexes (row: %d, column: %d), cell in box indexes (row: %d, column: %d).\n",
 					*cell.PotentialValues, truncatedPotentialValues,
 					cell.Box.IndexRow, cell.Box.IndexColumn,

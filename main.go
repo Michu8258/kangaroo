@@ -41,6 +41,15 @@ func main() {
 	}
 
 	fmt.Println("Is sudoku solved:", solved)
+	for _, box := range sudoku.Boxes {
+		for _, cell := range box.Cells {
+			if cell.Value == nil {
+				fmt.Println("(", cell.Box.IndexRow, cell.Box.IndexColumn, "), (", cell.IndexRowInBox, cell.Box.IndexColumn, ") -")
+			} else {
+				fmt.Println("(", cell.Box.IndexRow, cell.Box.IndexColumn, "), (", cell.IndexRowInBox, cell.Box.IndexColumn, ")", *cell.Value)
+			}
+		}
+	}
 }
 
 func createSettings() *models.Settings {

@@ -1,115 +1,263 @@
 package crookMethodSolver
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
 )
 
+type sudokuResultType int8
+
+const (
+	SuccessfullSolution sudokuResultType = 0
+	Failure             sudokuResultType = 1
+	InvalidGuess        sudokuResultType = 2
+	UnsolvableSudoku    sudokuResultType = 3
+)
+
+type sudokuRecursionData struct {
+	Sudoku         *models.Sudoku
+	Settings       *models.Settings
+	IsGuessing     bool
+	RecursionDepth int
+}
+
+type sudokuSolutionResult struct {
+	ResultType sudokuResultType
+	Errors     []error
+}
+
 // TODO - add documentation to all functions/methods
-// TODO - add type for solution result
-// TODO - add type for representing quess
 
 // TODO - add documentation string
 func SolveWithCrookMethod(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
-	return executeRecursiveSolution(sudoku, settings, false)
+	// TODO add conversion from internal result object (todo) to exposed one (todo - also to introduce)
+	result := executeRecursiveSolution(sudokuRecursionData{
+		Sudoku:         sudoku,
+		Settings:       settings,
+		IsGuessing:     false,
+		RecursionDepth: 0,
+	})
+
+	// TODO return more info like is it unsolvable sudoku for example
+	return result.ResultType == SuccessfullSolution, result.Errors
 }
 
 // TODO - add documentation string
-func executeRecursiveSolution(sudoku *models.Sudoku, settings *models.Settings, isGuessing bool) (bool, []error) {
-	errs := []error{}
+func executeRecursiveSolution(recursionData sudokuRecursionData) sudokuSolutionResult {
+	defer func() {
+		if recursionData.Settings.UseDebugPrints {
+			fmt.Println("REACHED END OF THE CROOK'S RECURSIVE METHOD. RETUNING UNSOLVABLE SUDOKU - DEPTH:",
+				recursionData.RecursionDepth)
+		}
+	}()
 
-	// simple sudokus that can be hamdled with pure elimination logic
-	allCellsHaveValues, eliminationErrors := executeEliminationsLogic(sudoku, settings)
-	errs = append(errs, eliminationErrors...)
-	if len(errs) >= 1 {
-		return false, errs // TODO result type
+	if recursionData.Settings.UseDebugPrints {
+		fmt.Println("RECURSIVE SOLUTION CROOK - DEPTH:", recursionData.RecursionDepth)
 	}
 
-	if allCellsHaveValues {
-		solved, e := handleAllCellsFilledCase(sudoku, errs, isGuessing)
-		if len(e) >= 1 {
-			errs = append(errs, e...)
-			return false, errs // TODO result type
-		}
-
-		if solved {
-			return true, errs // TODO result type
-		}
+	// simple sudokus that can be hamdled with pure elimination logic
+	solved, shortCircuitResult, result := executeSimpleAlgorithm(recursionData)
+	if solved || shortCircuitResult || result.ResultType == InvalidGuess {
+		return result
 	}
 
 	// preemptive sets (Crook)
 	for {
 		setManagedSuccessfully, atLeastOneCellWithNoPotentialValues, err :=
-			executePreemptiveSetsLogic(sudoku, settings)
+			executePreemptiveSetsLogic(recursionData.Sudoku, recursionData.Settings)
 		if err != nil {
-			errs = append(errs, err)
-			return false, errs // TODO result type
+			return sudokuSolutionResult{
+				ResultType: Failure,
+				Errors:     []error{err},
+			}
 		}
 
-		atLeastOneValueAssigned := setManagedSuccessfully && assignCertainValues(sudoku, settings)
+		atLeastOneValueAssigned := setManagedSuccessfully && assignCertainValues(
+			recursionData.Sudoku, recursionData.Settings)
 
 		if atLeastOneCellWithNoPotentialValues {
-			if settings.UseDebugPrints {
+			if recursionData.Settings.UseDebugPrints {
 				fmt.Println("At least one cell with no potential value found.")
 			}
-			break // todo add return with error here
-			// TODO result type
+
+			var result sudokuResultType = InvalidGuess
+			if !recursionData.IsGuessing {
+				result = UnsolvableSudoku
+			}
+
+			return sudokuSolutionResult{
+				ResultType: result,
+				Errors:     []error{fmt.Errorf("there is a call with no possible value to fill")},
+			}
 		}
 
 		if !setManagedSuccessfully && !atLeastOneValueAssigned {
-			if settings.UseDebugPrints {
+			if recursionData.Settings.UseDebugPrints {
 				fmt.Println("No preemptive set successfully processed (probably not found).")
 			}
 			break
 		}
 
 		if atLeastOneValueAssigned {
-			// TODO analyze the result
-			return executeRecursiveSolution(sudoku, settings, isGuessing)
+			return executeRecursiveSolution(sudokuRecursionData{
+				Sudoku:         recursionData.Sudoku,
+				Settings:       recursionData.Settings,
+				IsGuessing:     recursionData.IsGuessing,
+				RecursionDepth: recursionData.RecursionDepth + 1,
+			})
 		}
 	}
 
 	// at this point, we have exhausted simple elimination method
 	// and there are no cells with single potential value that
 	// would not violate sudoku rules. So we are guessing now.
-	cellValueGuess, err := designateSudokuGuess(sudoku, settings)
-	if err != nil {
-		errs = append(errs, err)
-		return false, errs // TODO result type
-	}
+	for {
+		cellToGuessExists, cellValueGuess, err := designateSudokuGuess(recursionData.Sudoku, recursionData.Settings)
+		if err != nil {
+			return sudokuSolutionResult{
+				ResultType: Failure,
+				Errors:     []error{err},
+			}
+		}
 
-	applySudokuValueGuess(cellValueGuess)
-	result, wefwe := executeRecursiveSolution(sudoku, settings, true)
-	// TODO result type
-	fmt.Println("After", result)
-	for wef := range wefwe {
-		fmt.Println(wef)
-	}
+		// this means all cells have values assigned and we can validate sudoku rules and check if
+		// we solved a sudoku
+		if !cellToGuessExists {
+			ruleValidationSuccess, err := validateSudokuRules(recursionData.Sudoku)
+			if err != nil {
+				return sudokuSolutionResult{
+					ResultType: Failure,
+					Errors:     []error{err},
+				}
+			}
 
-	// for now we assume that the sudoku is not solved
-	return false, errs // TODO result type
+			// if rule validation is successfull, we can assume sudoku is completely solved
+			// becuase all cells have a values assigned.
+			if ruleValidationSuccess {
+				return sudokuSolutionResult{
+					ResultType: SuccessfullSolution,
+					Errors:     []error{},
+				}
+			}
+
+			var result sudokuResultType
+
+			if recursionData.IsGuessing {
+				result = InvalidGuess
+			} else {
+				result = Failure
+			}
+
+			return sudokuSolutionResult{
+				ResultType: result,
+				Errors:     []error{err},
+			}
+		}
+
+		applySudokuValueGuess(cellValueGuess)
+		nestedIterationResult := executeRecursiveSolution(sudokuRecursionData{
+			Sudoku:         recursionData.Sudoku,
+			Settings:       recursionData.Settings,
+			IsGuessing:     true,
+			RecursionDepth: recursionData.RecursionDepth + 1,
+		})
+
+		if nestedIterationResult.ResultType == InvalidGuess {
+			err = restoreSnapshotFromGuessedValue(recursionData.Sudoku, cellValueGuess, recursionData.Settings)
+			if err != nil {
+				return sudokuSolutionResult{
+					ResultType: Failure,
+					Errors:     []error{err},
+				}
+			}
+		} else {
+			return nestedIterationResult
+		}
+	}
 }
 
-// applySudokuValueGuess applies guess sudoku value to the cell
-func applySudokuValueGuess(cellValueGuess *models.SudokuValueGuess) {
-	cellValueGuess.GuessedCell.PotentialValues = nil
-	cellValueGuess.GuessedCell.Value = &cellValueGuess.GuessedValue
+// executeSimpleAlgorithm executes single algorighm based on potential values
+// eliminations. It is suitable only for simplest sudokus, it will not handle
+// harder ones. Returns twoo booleans and a solution result. FIRST boolean
+// indicates if successfull solution was found, SECONDS indicates wheather
+// the result (third returned value) should be short circuited and returned
+// immediately from calling function.
+func executeSimpleAlgorithm(recursionData sudokuRecursionData) (bool, bool, sudokuSolutionResult) {
+	allCellsHaveValues, anyCellWithNoPotentialValues, errs := executeEliminationsLogic(
+		recursionData.Sudoku, recursionData.Settings)
+	if len(errs) >= 1 {
+		return false, true, sudokuSolutionResult{
+			ResultType: Failure,
+			Errors:     errs,
+		}
+	}
+
+	if allCellsHaveValues {
+		ruleValidationSuccess, err := validateSudokuRules(recursionData.Sudoku)
+		if err != nil {
+			return false, true, sudokuSolutionResult{
+				ResultType: Failure,
+				Errors:     errs,
+			}
+		}
+
+		// if rule validation is successfull, we can assume sudoku is completely solved
+		// becuase all cells have a values assigned.
+		if ruleValidationSuccess {
+			return true, true, sudokuSolutionResult{
+				ResultType: SuccessfullSolution,
+				Errors:     []error{},
+			}
+		}
+
+		var result sudokuResultType
+
+		if recursionData.IsGuessing {
+			result = InvalidGuess
+		} else {
+			result = Failure
+		}
+
+		return false, result == Failure, sudokuSolutionResult{
+			ResultType: result,
+			Errors:     []error{err},
+		}
+	}
+
+	if anyCellWithNoPotentialValues {
+		if !recursionData.IsGuessing {
+			return false, true, sudokuSolutionResult{
+				ResultType: UnsolvableSudoku,
+				Errors:     errs,
+			}
+		}
+
+		return false, false, sudokuSolutionResult{
+			ResultType: InvalidGuess,
+			Errors:     errs,
+		}
+	}
+
+	return false, false, sudokuSolutionResult{}
 }
 
 // executeEliminationsLogic executes simple elimination logic that may solve sudoku,
-// but will not in case of difficult ones. It returns a boolean flag indicating
-// if all cells has assigned certain values and slice of errors
-func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
-	errs := []error{}
+// but will not in case of difficult ones. It returns a pair of bools where FIRST
+// boolean flag indicates if all cells has assigned certain values, SECOND indicates
+// if there is at leas one cell with no potential values, and slice of errors
+func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) (bool, bool, []error) {
 	assignmentsExhausted := false
 
 	for !assignmentsExhausted {
 		//assign potential values
-		errs = append(errs, assignCellsPotentialValues(sudoku, settings)...)
+		anyCellWithNoPotentialValues, errs := assignCellsPotentialValues(sudoku, settings)
 		if len(errs) >= 1 {
-			return false, errs
+			return false, false, errs
+		}
+
+		if anyCellWithNoPotentialValues {
+			return false, true, []error{}
 		}
 
 		// try to assign certain values
@@ -118,7 +266,7 @@ func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) 
 			assignmentsExhausted = false
 			allCellsFilled := checkIfAllCellsHaveValues(sudoku, settings)
 			if allCellsFilled {
-				return true, errs
+				return true, false, []error{}
 			}
 			continue
 		}
@@ -126,29 +274,11 @@ func executeEliminationsLogic(sudoku *models.Sudoku, settings *models.Settings) 
 		assignmentsExhausted = true
 	}
 
-	return false, errs
+	return false, false, []error{}
 }
 
-// handleAllCellsFilledCase verifies if sudoku is correctly solved. Precondition:
-// this function expects that all cells of a sudoke are filled.
-func handleAllCellsFilledCase(sudoku *models.Sudoku, errs []error, wasGuessing bool) (bool, []error) {
-	ruleValidationSuccess, err := validateSudokuRules(sudoku)
-	if err != nil {
-		errs = append(errs, err)
-		return false, errs
-	}
-
-	if ruleValidationSuccess {
-		return true, errs
-	} else {
-		if !wasGuessing {
-			errs = addUnsolvableSudokuError(errs)
-		}
-		return false, errs
-	}
-}
-
-// addUnsolvableSudokuError simply adds unsolvable sudoku error to errors slice.
-func addUnsolvableSudokuError(errs []error) []error {
-	return append(errs, errors.New("failed to solve the sudoku. Does it have a solution?"))
+// applySudokuValueGuess applies guess sudoku value to the cell
+func applySudokuValueGuess(cellValueGuess *models.SudokuValueGuess) {
+	cellValueGuess.GuessedCell.PotentialValues = nil
+	cellValueGuess.GuessedCell.Value = &cellValueGuess.GuessedValue
 }
