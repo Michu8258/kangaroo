@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"errors"
-
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
@@ -82,6 +80,8 @@ func solveCommandHandler(request models.SolveCommandRequest, settings *models.Se
 	// TODO printout of important settings
 	printSudoku("Provided sudoku input:", sudoku, settings, consolePrinter)
 
+	// TODO - add spinner here
+	// https://github.com/charmbracelet/bubbletea/blob/master/examples/spinners/main.go
 	solved, errs := crook.SolveWithCrookMethod(sudoku, settings)
 	if !solved {
 		consolePrinter.PrintError("Failed to solve the sudoku.")
@@ -106,7 +106,7 @@ func getSudokuInputRawData(request models.SolveCommandRequest, settings *models.
 		return dataInputs.ReadFromJsonFile(*request.InputJsonFile)
 	}
 
-	return nil, errors.New("unsupported yet")
+	return dataInputs.ReadFromConsole(request, settings)
 }
 
 // printSudoku prints sudoku to standard out

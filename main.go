@@ -44,11 +44,13 @@ func main() {
 func createSettings() *models.Settings {
 	return &models.Settings{
 		MinimumLayoutSizeInclusive:       2,
-		MaximumLayoutSizeInclusive:       10,
+		MaximumLayoutSizeInclusive:       6,
+		DefaultLayoutSize:                3,
 		MinimumBoxSizeInclusive:          2,
 		MaximumBoxSizeInclusive:          5,
-		UseDebugPrints:                   false,
+		DefaultBoxSize:                   3,
 		SudokuPrintoutValuePaddingLength: 1,
+		UseDebugPrints:                   false,
 		SilentConsolePrints:              false,
 	}
 }
