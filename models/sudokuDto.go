@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/Michu8258/kangaroo/types"
-	"github.com/beevik/guid"
+	guid "github.com/nu7hatch/gouuid"
 )
 
 type SudokuCellDTO struct {
@@ -44,8 +44,9 @@ func (sudokuDto *SudokuDTO) ToSudoku() *Sudoku {
 	}
 
 	for _, sudokuBoxDto := range sudokuDto.Boxes {
+		boxId, _ := guid.NewV4()
 		sudokuBox := &SudokuBox{
-			Id:           *guid.New(),
+			Id:           *boxId,
 			Disabled:     sudokuBoxDto.Disabled,
 			IndexRow:     sudokuBoxDto.IndexRow,
 			IndexColumn:  sudokuBoxDto.IndexColumn,
@@ -54,8 +55,9 @@ func (sudokuDto *SudokuDTO) ToSudoku() *Sudoku {
 		}
 
 		for _, sudokuCellDto := range sudokuBoxDto.Cells {
+			cellId, _ := guid.NewV4()
 			sudokuBox.Cells = append(sudokuBox.Cells, &SudokuCell{
-				Id:               *guid.New(),
+				Id:               *cellId,
 				Value:            sudokuCellDto.Value,
 				IsInputValue:     sudokuCellDto.Value != nil,
 				PotentialValues:  nil,

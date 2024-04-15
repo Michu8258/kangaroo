@@ -2,14 +2,14 @@ package models
 
 import (
 	"github.com/Michu8258/kangaroo/types"
-	"github.com/beevik/guid"
+	guid "github.com/nu7hatch/gouuid"
 )
 
 const SudokuLineTypeRow = "row"
 const SudokuLineTypeColumn = "column"
 
 type SudokuCell struct {
-	Id               guid.Guid
+	Id               guid.UUID
 	Value            *int
 	IsInputValue     bool
 	PotentialValues  *types.GenericSlice[int]
@@ -37,11 +37,11 @@ type SudokuLine struct {
 	Cells        types.GenericSlice[*SudokuCell]
 	LineType     string
 	ViolatesRule bool
-	SubsudokuId  guid.Guid
+	SubsudokuId  guid.UUID
 }
 
 type SudokuBox struct {
-	Id           guid.Guid
+	Id           guid.UUID
 	Disabled     bool
 	IndexRow     int8
 	IndexColumn  int8
@@ -50,7 +50,7 @@ type SudokuBox struct {
 }
 
 type SubSudoku struct {
-	Id                    guid.Guid
+	Id                    guid.UUID
 	Boxes                 types.GenericSlice[*SudokuBox]
 	TopLeftBoxRowIndex    int8
 	TopLeftBoxColumnIndex int8
@@ -73,8 +73,8 @@ type Sudoku struct {
 type SudokuValueGuess struct {
 	GuessedValue            int
 	GuessedCell             *SudokuCell
-	SubsudokuId             guid.Guid
-	PotentialValuesSnapshot map[guid.Guid]*[]int
+	SubsudokuId             guid.UUID
+	PotentialValuesSnapshot map[guid.UUID]*[]int
 }
 
 type SudokuResultType int8

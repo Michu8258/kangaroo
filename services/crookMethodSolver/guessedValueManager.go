@@ -5,7 +5,7 @@ import (
 
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/types"
-	"github.com/beevik/guid"
+	guid "github.com/nu7hatch/gouuid"
 )
 
 // restoreSnapshotFromGuessedValue restores snapshot from guessed value for the sudoku,
@@ -98,9 +98,9 @@ func designateSudokuGuess(sudoku *models.Sudoku, settings *models.Settings) (boo
 // a cell we will guess value for. Returns reference to the cell itself (pointer), containing
 // sub-sudoku id (pointer) and error (if occured)
 func findCellWithLowestPotentialValues(sudoku *models.Sudoku, settings *models.Settings) (
-	*models.SudokuCell, *guid.Guid, error) {
+	*models.SudokuCell, *guid.UUID, error) {
 	var sudokuCell *models.SudokuCell
-	var subSudokuId *guid.Guid
+	var subSudokuId *guid.UUID
 
 	for _, subSudoku := range sudoku.SubSudokus {
 		for _, subSudokuBox := range subSudoku.Boxes {
@@ -154,8 +154,8 @@ func findCellWithLowestPotentialValues(sudoku *models.Sudoku, settings *models.S
 
 // createPotentialValuesSnapshot creates a snapshot map of the state of potential values
 // across all cells in the sudoku to
-func createPotentialValuesSnapshot(sudoku *models.Sudoku, settings *models.Settings) map[guid.Guid]*[]int {
-	snapshot := map[guid.Guid]*[]int{}
+func createPotentialValuesSnapshot(sudoku *models.Sudoku, settings *models.Settings) map[guid.UUID]*[]int {
+	snapshot := map[guid.UUID]*[]int{}
 
 	for _, sudokuBox := range sudoku.Boxes {
 		for _, sudokuCell := range sudokuBox.Cells {

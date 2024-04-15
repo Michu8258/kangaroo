@@ -3,9 +3,9 @@ module github.com/Michu8258/kangaroo
 go 1.22.0
 
 require (
-	github.com/beevik/guid v1.0.0
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.10.0
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/urfave/cli/v2 v2.27.1
 )
 

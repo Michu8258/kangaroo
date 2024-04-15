@@ -6,7 +6,7 @@ import (
 
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/types"
-	"github.com/beevik/guid"
+	guid "github.com/nu7hatch/gouuid"
 )
 
 type preemptiveSet struct {
@@ -220,7 +220,7 @@ func findShortestPreemptiveSet(cells types.GenericSlice[*models.SudokuCell], set
 func processPreemptiveSet(preemptiveSet *preemptiveSet, settings *models.Settings) (bool, bool) {
 	appliedAnyPotentialValuesChange := false
 	anyCellWithEmptyPotentialValues := false
-	preemptiveSetCellsIds := []guid.Guid{}
+	preemptiveSetCellsIds := []guid.UUID{}
 	for _, cell := range preemptiveSet.CellsInSet {
 		preemptiveSetCellsIds = append(preemptiveSetCellsIds, cell.Id)
 	}

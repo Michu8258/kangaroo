@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/beevik/guid"
+	guid "github.com/nu7hatch/gouuid"
 )
 
 // InitializeSubSudokus sets sub-sudokus data in the main sudoku
@@ -109,8 +109,9 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 	}
 
 	// we found all required boxes to build a sub-sudoku and all of them are enabled (NOT disabled)
+	subsudokuId, _ := guid.NewV4()
 	sudoku.SubSudokus = append(sudoku.SubSudokus, &models.SubSudoku{
-		Id:                    *guid.New(),
+		Id:                    *subsudokuId,
 		Boxes:                 subSudokuBoxes,
 		TopLeftBoxRowIndex:    startRowIndex,
 		TopLeftBoxColumnIndex: startColumnIndex,
