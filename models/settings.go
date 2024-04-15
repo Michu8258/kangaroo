@@ -7,4 +7,5 @@ type Settings struct {
 	MaximumBoxSizeInclusive          int8
 	UseDebugPrints                   bool
 	SudokuPrintoutValuePaddingLength int8
+	SilentConsolePrints              bool
 }
