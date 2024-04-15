@@ -63,7 +63,7 @@ func printBottomBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutC
 func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 	boxRowIndex int8, cellRowIndex int8, printer types.Printer) {
 
-	printer.PrintDefault("║")
+	printer.PrintBorder("║")
 	for boxColumnIndex := 0; boxColumnIndex < int(sudoku.Layout.Width); boxColumnIndex++ {
 		sudokuBox := sudoku.Boxes.FirstOrDefault(nil, func(box *models.SudokuBox) bool {
 			return box.IndexColumn == int8(boxColumnIndex) && box.IndexRow == boxRowIndex
@@ -74,7 +74,7 @@ func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 				if sudokuBox.Disabled {
 					printer.PrintDefault(" ")
 				} else {
-					printer.PrintDefault("│")
+					printer.PrintBorder("│")
 				}
 			}
 
@@ -100,11 +100,11 @@ func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 		}
 
 		if boxColumnIndex < int(sudoku.Layout.Width)-1 {
-			printer.PrintDefault("║")
+			printer.PrintBorder("║")
 		}
 	}
 
-	printer.PrintDefault("║")
+	printer.PrintBorder("║")
 	printer.PrintNewLine()
 }
 
@@ -115,9 +115,9 @@ func printSudokuValue(sudokuCell *models.SudokuCell, printoutConfig sudokuPrinto
 	isCellViolatingSudokuRule := sudokuCell.HasViolationError()
 
 	if sudokuCell.IsInputValue && isCellViolatingSudokuRule {
-		printFunc = printer.PrintBoldError
+		printFunc = printer.PrintError
 	} else if sudokuCell.IsInputValue {
-		printFunc = printer.PrintBold
+		printFunc = printer.PrintPrimary
 	} else if isCellViolatingSudokuRule {
 		printFunc = printer.PrintError
 	} else {
@@ -150,24 +150,24 @@ func printValuePadding(printoutConfig sudokuPrintoutConfig, printer types.Printe
 func printHorizontalBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 	startSign string, middleSign string, endSign string, columnCrossSign string, printer types.Printer) {
 
-	printer.PrintDefault(startSign)
+	printer.PrintBorder(startSign)
 
 	for sudokuBoxIndex := 0; sudokuBoxIndex < int(sudoku.Layout.Width); sudokuBoxIndex++ {
 		for boxColumnIndex := 0; boxColumnIndex < printoutConfig.BoxSize; boxColumnIndex++ {
 			if boxColumnIndex > 0 {
-				printer.PrintDefault(middleSign)
+				printer.PrintBorder(middleSign)
 			}
 			for characterIndex := 0; characterIndex < printoutConfig.ValueCharactersLength+printoutConfig.Padding*2; characterIndex++ {
-				printer.PrintDefault(middleSign)
+				printer.PrintBorder(middleSign)
 			}
 		}
 
 		if sudokuBoxIndex < int(sudoku.Layout.Width)-1 {
-			printer.PrintDefault(columnCrossSign)
+			printer.PrintBorder(columnCrossSign)
 		}
 	}
 
-	printer.PrintDefault(endSign)
+	printer.PrintBorder(endSign)
 	printer.PrintNewLine()
 }
 

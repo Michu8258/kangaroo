@@ -6,7 +6,7 @@ import (
 
 // PrintErrors prints errors list
 func PrintErrors(errorsHeader string, printer types.Printer, errors ...error) {
-	printer.PrintBoldError(errorsHeader)
+	printer.PrintError(errorsHeader)
 	printer.PrintNewLine()
 
 	for _, err := range errors {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Michu8258/kangaroo/types"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -82,15 +83,17 @@ func (m promptSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m promptSelect[T]) View() string {
 	s := strings.Builder{}
-	s.WriteString(fmt.Sprintf("%s\n", m.title))
+	s.WriteString(types.OutputStyles.PrimaryStyle.Render(m.title))
+	s.WriteString("\n")
 
 	for i := 0; i < len(m.choices); i++ {
 		if m.cursor == i {
-			s.WriteString("[x] ")
+			s.WriteString(types.OutputStyles.SuccessStyle.Render("[✓] "))
+			s.WriteString(types.OutputStyles.SuccessStyle.Render(m.choices[i].Label))
 		} else {
-			s.WriteString("[ ] ")
+			s.WriteString(types.OutputStyles.DefaultStyle.Render("[ ] "))
+			s.WriteString(types.OutputStyles.DefaultStyle.Render(m.choices[i].Label))
 		}
-		s.WriteString(m.choices[i].Label)
 		s.WriteString("\n")
 	}
 

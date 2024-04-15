@@ -10,6 +10,7 @@ import (
 
 // https://github.com/charmbracelet/bubbletea/blob/master/examples/result/main.go
 
+// TODO add docs
 func ReadFromConsole(request models.SolveCommandRequest, settings *models.Settings) (*models.SudokuDTO, error) {
 	readError := errors.New("failed to read sudoku user data inputs")
 
@@ -31,8 +32,6 @@ func ReadFromConsole(request models.SolveCommandRequest, settings *models.Settin
 	request.BoxSize = &boxSize
 	request.LayoutWidth = &layoutWidth
 	request.LayoutHeight = &layoutHeight
-
-	fmt.Println(*request.BoxSize, *request.LayoutWidth, *request.LayoutHeight)
 	return nil, errors.New("fwiuehfiuweifuh")
 }
 

@@ -1,59 +1,53 @@
 package types
 
-import "github.com/fatih/color"
+import (
+	"fmt"
+)
 
 type Printer interface {
 	PrintDefault(text string)
-	PrintBold(text string)
+	PrintPrimary(text string)
 	PrintError(text string)
-	PrintBoldError(text string)
+	PrintBorder(text string)
 	PrintNewLine()
 }
 
 type ConsolePrinter struct {
-	defaultPrinter   *color.Color
-	boldPrinter      *color.Color
-	errorPrinter     *color.Color
-	boldErrorPrinter *color.Color
-	isSilent         bool
+	isSilent bool
 }
 
 func NewConsolePrinter(isSilent bool) ConsolePrinter {
 	return ConsolePrinter{
-		defaultPrinter:   color.New(),
-		boldPrinter:      color.New(color.Bold, color.FgHiBlue),
-		errorPrinter:     color.New(color.FgRed),
-		boldErrorPrinter: color.New(color.Bold, color.FgRed),
-		isSilent:         isSilent,
+		isSilent: isSilent,
 	}
 }
 
 func (cp ConsolePrinter) PrintDefault(text string) {
 	if !cp.isSilent {
-		cp.defaultPrinter.Printf(text)
+		fmt.Printf("%s", OutputStyles.DefaultStyle.Render(text))
 	}
 }
 
-func (cp ConsolePrinter) PrintBold(text string) {
+func (cp ConsolePrinter) PrintPrimary(text string) {
 	if !cp.isSilent {
-		cp.boldPrinter.Printf(text)
+		fmt.Printf("%s", OutputStyles.PrimaryStyle.Render(text))
 	}
 }
 
 func (cp ConsolePrinter) PrintError(text string) {
 	if !cp.isSilent {
-		cp.errorPrinter.Printf(text)
+		fmt.Printf("%s", OutputStyles.ErrorStyle.Render(text))
 	}
 }
 
-func (cp ConsolePrinter) PrintBoldError(text string) {
+func (cp ConsolePrinter) PrintBorder(text string) {
 	if !cp.isSilent {
-		cp.boldErrorPrinter.Printf(text)
+		fmt.Printf("%s", OutputStyles.BorderStyle.Render(text))
 	}
 }
 
 func (cp ConsolePrinter) PrintNewLine() {
 	if !cp.isSilent {
-		cp.defaultPrinter.Printf("\n")
+		fmt.Printf("%s", OutputStyles.DefaultStyle.Render("\n"))
 	}
 }
