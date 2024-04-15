@@ -9,6 +9,7 @@ import (
 	"github.com/Michu8258/kangaroo/services/dataInputs"
 	"github.com/Michu8258/kangaroo/services/initialization"
 	"github.com/Michu8258/kangaroo/services/printers"
+	"github.com/Michu8258/kangaroo/types"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	printer := types.NewConsolePrinter()
 	sudoku := rawSudokuData.ToSudoku()
 	errs := initialization.InitializeSudoku(sudoku, settings)
 	if len(errs) >= 1 {
@@ -31,9 +33,7 @@ func main() {
 		return
 	}
 
-	printers.PrintSudoku(sudoku, settings)
-	fmt.Println("Amount of subSudokus", len(sudoku.SubSudokus))
-
+	printers.PrintSudoku(sudoku, settings, printer)
 	solved, errs := crook.SolveWithCrookMethod(sudoku, settings)
 	if len(errs) >= 1 {
 		for _, err := range errs {
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	fmt.Println("Is sudoku solved:", solved)
-	printers.PrintSudoku(sudoku, settings)
+	printers.PrintSudoku(sudoku, settings, printer)
 }
 
 func createSettings() *models.Settings {

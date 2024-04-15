@@ -19,7 +19,6 @@ type sudokuSolutionResult struct {
 	Errors     []error
 }
 
-// TODO - add result printing
 // SolveWithCrookMethod tries to solve the sudoku puzzle by altering references which soduku model
 // (a parameter) is build with. Returns a boolean flag indicating if solution was found and is
 // correct, and slice of errors. Errors should not be printed to the user, they are actualy an

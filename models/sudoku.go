@@ -19,6 +19,20 @@ type SudokuCell struct {
 	MemberOfLines    types.GenericSlice[*SudokuLine]
 }
 
+func (cell *SudokuCell) HasViolationError() bool {
+	if cell.Box != nil && cell.Box.ViolatesRule {
+		return true
+	}
+
+	if cell.MemberOfLines == nil || len(cell.MemberOfLines) < 1 {
+		return false
+	}
+
+	return cell.MemberOfLines.Any(func(line *SudokuLine) bool {
+		return line.ViolatesRule
+	})
+}
+
 type SudokuLine struct {
 	Cells        types.GenericSlice[*SudokuCell]
 	LineType     string
