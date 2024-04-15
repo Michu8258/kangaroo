@@ -2,7 +2,7 @@ package types
 
 import "github.com/charmbracelet/lipgloss"
 
-type Styles struct {
+type styles struct {
 	DefaultStyle lipgloss.Style
 	PrimaryStyle lipgloss.Style
 	SuccessStyle lipgloss.Style
@@ -10,7 +10,7 @@ type Styles struct {
 	BorderStyle  lipgloss.Style
 }
 
-var OutputStyles = Styles{
+var OutputStyles = styles{
 	DefaultStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#eeeeee")),
 	PrimaryStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#7777ff")).Bold(true),
 	SuccessStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#33ff33")),

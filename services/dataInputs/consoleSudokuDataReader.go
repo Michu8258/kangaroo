@@ -4,14 +4,16 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/prompts"
+	"github.com/Michu8258/kangaroo/types"
 )
 
-// https://github.com/charmbracelet/bubbletea/blob/master/examples/result/main.go
-
-// TODO add docs
-func ReadFromConsole(request models.SolveCommandRequest, settings *models.Settings) (*models.SudokuDTO, error) {
+// ReadFromConsole reads raw sudoku data based on user console inputs.
+// Initial request config is respected and some questions are skipped
+// if provided object has correct values (in range) assigned. Returns
+// sudoku DTO and error if occures.
+func ReadFromConsole(request *models.SolveCommandRequest, settings *models.Settings) (*models.SudokuDTO, error) {
 	readError := errors.New("failed to read sudoku user data inputs")
 
 	boxSize, err := readBoxSize(request, settings)
@@ -32,9 +34,64 @@ func ReadFromConsole(request models.SolveCommandRequest, settings *models.Settin
 	request.BoxSize = &boxSize
 	request.LayoutWidth = &layoutWidth
 	request.LayoutHeight = &layoutHeight
+
+	sudokuDto := buildEmptySudokuDTO(request)
+	err = prompts.PromptSudokuValues(sudokuDto, settings)
+	if err != nil {
+		if settings.UseDebugPrints {
+			fmt.Println(err)
+		}
+		return nil, readError
+	}
+
 	return nil, errors.New("fwiuehfiuweifuh")
+	// return sudokuDto, nil
 }
 
+// buildEmptySudokuDTO builds sudokuDTO object based un user provided requirements
+func buildEmptySudokuDTO(request *models.SolveCommandRequest) *models.SudokuDTO {
+	sudokuDto := &models.SudokuDTO{
+		BoxSize: *request.BoxSize,
+		Layout: models.SudokuLayoutDTO{
+			Width:  *request.LayoutWidth,
+			Height: *request.LayoutHeight,
+		},
+		Boxes: types.GenericSlice[*models.SudokuBoxDTO]{},
+	}
+
+	var bowRowIndex int8 = 0
+	var boxColumnIndex int8 = 0
+
+	for bowRowIndex = 0; bowRowIndex < sudokuDto.Layout.Width; bowRowIndex++ {
+		for boxColumnIndex = 0; boxColumnIndex < sudokuDto.Layout.Height; boxColumnIndex++ {
+			sudokuBox := &models.SudokuBoxDTO{
+				Disabled:    false,
+				IndexRow:    bowRowIndex,
+				IndexColumn: boxColumnIndex,
+				Cells:       types.GenericSlice[*models.SudokuCellDTO]{},
+			}
+
+			var cellRowIndex int8 = 0
+			var cellColumnIndex int8 = 0
+
+			for cellRowIndex = 0; cellRowIndex < sudokuDto.BoxSize; cellRowIndex++ {
+				for cellColumnIndex = 0; cellColumnIndex < sudokuDto.BoxSize; cellColumnIndex++ {
+					sudokuBox.Cells = append(sudokuBox.Cells, &models.SudokuCellDTO{
+						Value:            nil,
+						IndexRowInBox:    cellRowIndex,
+						IndexColumnInBox: cellColumnIndex,
+					})
+				}
+			}
+
+			sudokuDto.Boxes = append(sudokuDto.Boxes, sudokuBox)
+		}
+	}
+
+	return sudokuDto
+}
+
+// readLayoutSize prompts user for layout size - if wrong value pre-provided
 func readLayoutSize(settings *models.Settings, direction string, layoutDirectionSize *int8) (int8, error) {
 	if layoutDirectionSize != nil && *layoutDirectionSize >= settings.MinimumLayoutSizeInclusive &&
 		*layoutDirectionSize <= settings.MaximumLayoutSizeInclusive {
@@ -51,7 +108,7 @@ func readLayoutSize(settings *models.Settings, direction string, layoutDirection
 			direction, settings.MinimumLayoutSizeInclusive, settings.MaximumLayoutSizeInclusive)
 	}
 
-	result, err := helpers.PromptMakeSelectChoice(question, options, defaultIndex)
+	result, err := prompts.PromptMakeSelectChoice(question, options, defaultIndex)
 	if err != nil {
 		return 0, err
 	}
@@ -59,13 +116,14 @@ func readLayoutSize(settings *models.Settings, direction string, layoutDirection
 	return result.Value, nil
 }
 
-func getLayoutSelectOptions(settings *models.Settings, direction string) ([]helpers.PromptSelectOption[int8], int) {
-	options := []helpers.PromptSelectOption[int8]{}
+// getBoxSizeSelectOptions generates slice of correct options for sudoku layout
+func getLayoutSelectOptions(settings *models.Settings, direction string) ([]prompts.PromptSelectOption[int8], int) {
+	options := []prompts.PromptSelectOption[int8]{}
 	defaultElementIndex := 0
 
 	var size int8 = 0
 	for size = settings.MinimumLayoutSizeInclusive; size <= settings.MaximumLayoutSizeInclusive; size++ {
-		options = append(options, helpers.PromptSelectOption[int8]{
+		options = append(options, prompts.PromptSelectOption[int8]{
 			Label: fmt.Sprintf("Layout size %s %d", direction, size),
 			Value: size,
 		})
@@ -78,7 +136,8 @@ func getLayoutSelectOptions(settings *models.Settings, direction string) ([]help
 	return options, defaultElementIndex
 }
 
-func readBoxSize(request models.SolveCommandRequest, settings *models.Settings) (int8, error) {
+// readBoxSize prompts user for box size - if wrong value pre-provided
+func readBoxSize(request *models.SolveCommandRequest, settings *models.Settings) (int8, error) {
 	if request.BoxSize != nil && *request.BoxSize >= settings.MinimumBoxSizeInclusive &&
 		*request.BoxSize <= settings.MaximumBoxSizeInclusive {
 		return *request.BoxSize, nil
@@ -94,7 +153,7 @@ func readBoxSize(request models.SolveCommandRequest, settings *models.Settings) 
 			settings.MinimumBoxSizeInclusive, settings.MaximumBoxSizeInclusive)
 	}
 
-	result, err := helpers.PromptMakeSelectChoice(question, options, defaultIndex)
+	result, err := prompts.PromptMakeSelectChoice(question, options, defaultIndex)
 	if err != nil {
 		return 0, err
 	}
@@ -102,13 +161,14 @@ func readBoxSize(request models.SolveCommandRequest, settings *models.Settings) 
 	return result.Value, nil
 }
 
-func getBoxSizeSelectOptions(settings *models.Settings) ([]helpers.PromptSelectOption[int8], int) {
-	options := []helpers.PromptSelectOption[int8]{}
+// getBoxSizeSelectOptions generates slice of correct options for box size
+func getBoxSizeSelectOptions(settings *models.Settings) ([]prompts.PromptSelectOption[int8], int) {
+	options := []prompts.PromptSelectOption[int8]{}
 	defaultElementIndex := 0
 
 	var size int8 = 0
 	for size = settings.MinimumBoxSizeInclusive; size <= settings.MaximumBoxSizeInclusive; size++ {
-		options = append(options, helpers.PromptSelectOption[int8]{
+		options = append(options, prompts.PromptSelectOption[int8]{
 			Label: fmt.Sprintf("Box size %d", size),
 			Value: size,
 		})

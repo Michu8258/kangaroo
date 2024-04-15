@@ -62,7 +62,7 @@ func SolveCommand(settings *models.Settings) *cli.Command {
 }
 
 // solveCommandHandler is an entry point function for solve sudoku command
-func solveCommandHandler(request models.SolveCommandRequest, settings *models.Settings) error {
+func solveCommandHandler(request *models.SolveCommandRequest, settings *models.Settings) error {
 	consolePrinter := types.NewConsolePrinter(settings.SilentConsolePrints)
 	rawSudoku, err := getSudokuInputRawData(request, settings)
 	if err != nil {
@@ -101,7 +101,7 @@ func solveCommandHandler(request models.SolveCommandRequest, settings *models.Se
 
 // getSudokuInputRawData retrieves sudoku raw data by analyzing the
 // request object and executing one of the data sources logic.
-func getSudokuInputRawData(request models.SolveCommandRequest, settings *models.Settings) (*models.SudokuDTO, error) {
+func getSudokuInputRawData(request *models.SolveCommandRequest, settings *models.Settings) (*models.SudokuDTO, error) {
 	if request.InputJsonFile != nil {
 		return dataInputs.ReadFromJsonFile(*request.InputJsonFile)
 	}
@@ -118,7 +118,7 @@ func printSudoku(description string, sudoku *models.Sudoku, settings *models.Set
 
 // buildSolveCommandRequest retrieves options settings from the command
 // and constructs request object.
-func buildSolveCommandRequest(context *cli.Context) models.SolveCommandRequest {
+func buildSolveCommandRequest(context *cli.Context) *models.SolveCommandRequest {
 	inputJsonFile := context.String("input-file-json")
 	outputJsonFile := context.String("output-file-json")
 	outputTxtFile := context.String("output-file-txt")
@@ -126,7 +126,7 @@ func buildSolveCommandRequest(context *cli.Context) models.SolveCommandRequest {
 	layoutWidth := context.Int("layout-width")
 	layoutHeight := context.Int("layout-height")
 
-	request := models.SolveCommandRequest{}
+	request := &models.SolveCommandRequest{}
 
 	if len(inputJsonFile) > 0 {
 		request.InputJsonFile = &inputJsonFile

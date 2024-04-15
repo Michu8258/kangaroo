@@ -1,4 +1,4 @@
-package helpers
+package prompts
 
 import (
 	"fmt"
@@ -23,25 +23,19 @@ type promptSelect[T comparable] struct {
 func PromptMakeSelectChoice[T comparable](title string, options []PromptSelectOption[T],
 	initialChoiceIndex int) (PromptSelectOption[T], error) {
 
-	model := promptSelect[T]{
+	program := tea.NewProgram(promptSelect[T]{
 		cursor:       initialChoiceIndex,
 		activeChoice: options[initialChoiceIndex],
 		choices:      options,
 		title:        title,
-	}
+	})
 
-	prog := tea.NewProgram(model)
-
-	defer func() {
-		prog.Send(tea.ClearScreen)
-	}()
-
-	m, err := prog.Run()
+	model, err := program.Run()
 	if err != nil {
 		return options[initialChoiceIndex], err
 	}
 
-	if m, ok := m.(promptSelect[T]); ok {
+	if m, ok := model.(promptSelect[T]); ok {
 		return m.activeChoice, nil
 	}
 
