@@ -227,7 +227,7 @@ func printSudokuValuesLine(builder *strings.Builder, model *sudokuValuesPrompt,
 
 	for boxColumnIndex = 0; boxColumnIndex < model.sudokuDTO.Layout.Width; boxColumnIndex++ {
 		sudokuBox := model.sudokuDTO.Boxes.FirstOrDefault(nil, func(box *models.SudokuBoxDTO) bool {
-			return box.IndexColumn == int8(boxColumnIndex) && box.IndexRow == boxRowIndex
+			return box.IndexColumn == boxColumnIndex && box.IndexRow == boxRowIndex
 		})
 
 		for cellColumnIndex = 0; cellColumnIndex < model.sudokuDTO.BoxSize; cellColumnIndex++ {
@@ -236,7 +236,7 @@ func printSudokuValuesLine(builder *strings.Builder, model *sudokuValuesPrompt,
 			}
 
 			sudokuCell := sudokuBox.Cells.FirstOrDefault(nil, func(cell *models.SudokuCellDTO) bool {
-				return cell.IndexColumnInBox == int8(cellColumnIndex) && cell.IndexRowInBox == cellRowIndex
+				return cell.IndexColumnInBox == cellColumnIndex && cell.IndexRowInBox == cellRowIndex
 			})
 
 			printSudokuCell(builder, model, sudokuBox, sudokuCell)
@@ -343,7 +343,7 @@ func printSudokuControls(builder *strings.Builder) {
 
 // goUpSudokuCell navigates to the cell on the top from current one
 func goUpSudokuCell(model *sudokuValuesPrompt) {
-	maxBoxRowIndex := model.sudokuDTO.Layout.Width - 1
+	maxCellRowIndex := model.sudokuDTO.BoxSize - 1
 
 	// first cell in column - cannot go further top
 	if model.currentBox.IndexRow <= 0 &&
@@ -376,7 +376,7 @@ func goUpSudokuCell(model *sudokuValuesPrompt) {
 	}
 
 	newCell := newBox.Cells.FirstOrDefault(nil, func(cell *models.SudokuCellDTO) bool {
-		return cell.IndexColumnInBox == model.currentCell.IndexColumnInBox && cell.IndexRowInBox == maxBoxRowIndex
+		return cell.IndexColumnInBox == model.currentCell.IndexColumnInBox && cell.IndexRowInBox == maxCellRowIndex
 	})
 
 	if newCell == nil {
@@ -436,7 +436,7 @@ func goDownSudokuCell(model *sudokuValuesPrompt) {
 
 // goLeftSudokuCell navigates to the cell on the left from current one
 func goLeftSudokuCell(model *sudokuValuesPrompt) {
-	maxBoxColumnIndex := model.sudokuDTO.Layout.Width - 1
+	maxCellColumnIndex := model.sudokuDTO.BoxSize - 1
 
 	// first cell in row - cannot go further left
 	if model.currentBox.IndexColumn <= 0 &&
@@ -469,7 +469,7 @@ func goLeftSudokuCell(model *sudokuValuesPrompt) {
 	}
 
 	newCell := newBox.Cells.FirstOrDefault(nil, func(cell *models.SudokuCellDTO) bool {
-		return cell.IndexRowInBox == model.currentCell.IndexRowInBox && cell.IndexColumnInBox == maxBoxColumnIndex
+		return cell.IndexRowInBox == model.currentCell.IndexRowInBox && cell.IndexColumnInBox == maxCellColumnIndex
 	})
 
 	if newCell == nil {

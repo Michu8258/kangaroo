@@ -22,15 +22,18 @@ func PrintSudoku(sudoku *models.Sudoku, settings *models.Settings, printer types
 	printoutConfig := buildSudokuPrintoutConfig(sudoku, settings)
 	printTopBorderLine(sudoku, printoutConfig, printer)
 
-	for boxRowIndex := 0; boxRowIndex < int(sudoku.Layout.Height); boxRowIndex++ {
-		for cellRowIndex := 0; cellRowIndex < int(sudoku.BoxSize); cellRowIndex++ {
+	var boxRowIndex int8 = 0
+	var cellRowIndex int8 = 0
+
+	for boxRowIndex = 0; boxRowIndex < sudoku.Layout.Height; boxRowIndex++ {
+		for cellRowIndex = 0; cellRowIndex < sudoku.BoxSize; cellRowIndex++ {
 			printValuesLine(sudoku, printoutConfig, int8(boxRowIndex), int8(cellRowIndex), printer)
-			if cellRowIndex < int(sudoku.BoxSize)-1 {
-				printMidCellsLine(sudoku, printoutConfig, printer)
+			if cellRowIndex < sudoku.BoxSize-1 {
+				printMidCellsLine(sudoku, printoutConfig, printer, boxRowIndex)
 			}
 		}
 
-		if boxRowIndex < int(sudoku.Layout.Height)-1 {
+		if boxRowIndex < sudoku.Layout.Height-1 {
 			printMidBoxesLine(sudoku, printoutConfig, printer)
 		}
 	}
@@ -43,11 +46,6 @@ func printTopBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConf
 	printHorizontalBorderLine(sudoku, printoutConfig, "╔", "═", "╗", "╦", printer)
 }
 
-// printMidCellsLine prints line of a sudoku puzzle that appears between cells
-func printMidCellsLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer types.Printer) {
-	printHorizontalBorderLine(sudoku, printoutConfig, "║", "─", "║", "║", printer)
-}
-
 // printMidBoxesLine prints line of a sudoku puzzle that appears between boxes
 func printMidBoxesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer types.Printer) {
 	printHorizontalBorderLine(sudoku, printoutConfig, "║", "═", "║", "╬", printer)
@@ -56,6 +54,42 @@ func printMidBoxesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfi
 // printBottomBorderLine prints bottom border line of a sudoku puzzle
 func printBottomBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer types.Printer) {
 	printHorizontalBorderLine(sudoku, printoutConfig, "╚", "═", "╝", "╩", printer)
+}
+
+// printMidCellsLine prints line of a sudoku puzzle that appears between cells
+func printMidCellsLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer types.Printer, boxRowIndex int8) {
+
+	printer.PrintBorder("║")
+
+	var sudokuBoxIndex int8 = 0
+	var boxColumnIndex int8 = 0
+
+	for sudokuBoxIndex = 0; sudokuBoxIndex < sudoku.Layout.Width; sudokuBoxIndex++ {
+		for boxColumnIndex = 0; boxColumnIndex < int8(printoutConfig.BoxSize); boxColumnIndex++ {
+			middleSign := "─"
+			box := sudoku.Boxes.FirstOrDefault(nil, func(b *models.SudokuBox) bool {
+				return b.IndexRow == boxRowIndex && b.IndexColumn == sudokuBoxIndex
+			})
+
+			if box != nil && box.Disabled {
+				middleSign = " "
+			}
+
+			if boxColumnIndex > 0 {
+				printer.PrintBorder(middleSign)
+			}
+			for characterIndex := 0; characterIndex < printoutConfig.ValueCharactersLength+printoutConfig.Padding*2; characterIndex++ {
+				printer.PrintBorder(middleSign)
+			}
+		}
+
+		if sudokuBoxIndex < sudoku.Layout.Width-1 {
+			printer.PrintBorder("║")
+		}
+	}
+
+	printer.PrintBorder("║")
+	printer.PrintNewLine()
 }
 
 // printValuesLine prinst single horizontal line with values of a sudoku puzzle
@@ -80,7 +114,7 @@ func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 
 			if sudokuBox.Disabled {
 				for characterIndex := 0; characterIndex < printoutConfig.ValueCharactersLength; characterIndex++ {
-					printer.PrintDefault(" ")
+					printNoValuePlaceholder(printoutConfig, printer)
 				}
 			} else {
 				sudokuCell := sudokuBox.Cells.FirstOrDefault(nil, func(cell *models.SudokuCell) bool {
@@ -88,9 +122,7 @@ func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 				})
 
 				if sudokuCell.Value == nil {
-					for characterIndex := 0; characterIndex < printoutConfig.ValueCharactersLength+printoutConfig.Padding*2; characterIndex++ {
-						printer.PrintDefault(" ")
-					}
+					printNoValuePlaceholder(printoutConfig, printer)
 				} else {
 					printValuePadding(printoutConfig, printer)
 					printSudokuValue(sudokuCell, printoutConfig, printer)
@@ -134,6 +166,16 @@ func printSudokuValue(sudokuCell *models.SudokuCell, printoutConfig sudokuPrinto
 	default:
 		printFunc("x")
 	}
+}
+
+// printNoValuePlaceholder prints empty spaces with amount adjusted with characters
+// per value and padding
+func printNoValuePlaceholder(printoutConfig sudokuPrintoutConfig, printer types.Printer) {
+	printValuePadding(printoutConfig, printer)
+	for characterIndex := 0; characterIndex < printoutConfig.ValueCharactersLength; characterIndex++ {
+		printer.PrintDefault(" ")
+	}
+	printValuePadding(printoutConfig, printer)
 }
 
 // printValuePadding prints padding before and after a sudoku value (horizontal padding)

@@ -61,8 +61,8 @@ func buildEmptySudokuDTO(request *models.SudokuConfigRequest) *models.SudokuDTO 
 	var bowRowIndex int8 = 0
 	var boxColumnIndex int8 = 0
 
-	for bowRowIndex = 0; bowRowIndex < sudokuDto.Layout.Width; bowRowIndex++ {
-		for boxColumnIndex = 0; boxColumnIndex < sudokuDto.Layout.Height; boxColumnIndex++ {
+	for bowRowIndex = 0; bowRowIndex < sudokuDto.Layout.Height; bowRowIndex++ {
+		for boxColumnIndex = 0; boxColumnIndex < sudokuDto.Layout.Width; boxColumnIndex++ {
 			sudokuBox := &models.SudokuBoxDTO{
 				Disabled:    false,
 				IndexRow:    bowRowIndex,
