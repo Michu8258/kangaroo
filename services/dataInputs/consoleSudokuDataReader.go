@@ -13,7 +13,7 @@ import (
 // Initial request config is respected and some questions are skipped
 // if provided object has correct values (in range) assigned. Returns
 // sudoku DTO and error if occures.
-func ReadFromConsole(request *models.SolveCommandRequest, settings *models.Settings) (*models.SudokuDTO, error) {
+func ReadFromConsole(request *models.SudokuConfigRequest, settings *models.Settings) (*models.SudokuDTO, error) {
 	readError := errors.New("failed to read sudoku user data inputs")
 
 	boxSize, err := prompts.PromptGetBoxSize(request.BoxSize, settings)
@@ -48,7 +48,7 @@ func ReadFromConsole(request *models.SolveCommandRequest, settings *models.Setti
 }
 
 // buildEmptySudokuDTO builds sudokuDTO object based un user provided requirements
-func buildEmptySudokuDTO(request *models.SolveCommandRequest) *models.SudokuDTO {
+func buildEmptySudokuDTO(request *models.SudokuConfigRequest) *models.SudokuDTO {
 	sudokuDto := &models.SudokuDTO{
 		BoxSize: *request.BoxSize,
 		Layout: models.SudokuLayoutDTO{

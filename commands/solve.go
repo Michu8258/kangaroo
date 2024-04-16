@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
@@ -15,7 +13,7 @@ import (
 
 // TODO - test algorithm agains more sudoku cases,
 // TODO - test algorithm against unsolvable sudoku,
-// TODO - handle saving results to json and txt
+// TODO - there is still something wrong with the alrogithm... :(
 
 // SolveCommand provides solve sudoku command configuration
 func SolveCommand(settings *models.Settings) *cli.Command {
@@ -24,24 +22,9 @@ func SolveCommand(settings *models.Settings) *cli.Command {
 		Aliases: []string{"s"},
 		Usage:   "Solves a provided sudoku puzzle",
 		Flags: []cli.Flag{
-			&cli.IntFlag{
-				Name:        "box-size",
-				Aliases:     []string{"s"},
-				DefaultText: "0",
-				Usage:       "How many rows and columns single sudoku box has - in case of classic sudoku it is 3",
-			},
-			&cli.IntFlag{
-				Name:        "layout-width",
-				Aliases:     []string{"lw"},
-				DefaultText: "0",
-				Usage:       "How many boxes there are in the row - in case of classic sudoku it is 3",
-			},
-			&cli.IntFlag{
-				Name:        "layout-height",
-				Aliases:     []string{"lh"},
-				DefaultText: "0",
-				Usage:       "How many boxes there are in the column - in case of classic sudoku it is 3",
-			},
+			&boxSizeFlag,
+			&layoutWidthFlag,
+			&layoutHeightFlag,
 			&cli.StringFlag{Name: "input-file-json",
 				Aliases:     []string{"i"},
 				DefaultText: "",
@@ -83,7 +66,7 @@ func solveCommandHandler(request *models.SolveCommandRequest, settings *models.S
 		return nil
 	}
 
-	printSudokuConfig(request, consolePrinter)
+	printSudokuConfig(sudoku, consolePrinter)
 	printSudoku("Provided sudoku input:", sudoku, settings, consolePrinter)
 
 	// TODO - add spinner here ?
@@ -112,27 +95,7 @@ func getSudokuInputRawData(request *models.SolveCommandRequest, settings *models
 		return dataInputs.ReadFromJsonFile(*request.InputJsonFile)
 	}
 
-	return dataInputs.ReadFromConsole(request, settings)
-}
-
-// printSudokuConfig prints sudoku configuration with provided printer
-func printSudokuConfig(request *models.SolveCommandRequest, printer types.Printer) {
-	printer.PrintPrimary("Selected sudoku puzzle configuration:")
-	printer.PrintNewLine()
-	printer.PrintDefault(fmt.Sprintf("- sudoku box size %d", *request.BoxSize))
-	printer.PrintNewLine()
-	printer.PrintDefault(fmt.Sprintf("- sudoku layout width %d", *request.LayoutWidth))
-	printer.PrintNewLine()
-	printer.PrintDefault(fmt.Sprintf("- sudoku layout height %d", *request.LayoutHeight))
-	printer.PrintNewLine()
-	printer.PrintNewLine()
-}
-
-// printSudoku prints sudoku to standard out
-func printSudoku(description string, sudoku *models.Sudoku, settings *models.Settings, printer types.Printer) {
-	printer.PrintPrimary(description)
-	printer.PrintNewLine()
-	printers.PrintSudoku(sudoku, settings, printer)
+	return dataInputs.ReadFromConsole(request.GetConfigRequest(), settings)
 }
 
 // buildSolveCommandRequest retrieves options settings from the command
@@ -141,9 +104,9 @@ func buildSolveCommandRequest(context *cli.Context) *models.SolveCommandRequest 
 	inputJsonFile := context.String("input-file-json")
 	outputJsonFile := context.String("output-file-json")
 	outputTxtFile := context.String("output-file-txt")
-	boxSize := context.Int("box-size")
-	layoutWidth := context.Int("layout-width")
-	layoutHeight := context.Int("layout-height")
+	boxSize := context.Int(boxSizeFlag.Name)
+	layoutWidth := context.Int(layoutWidthFlag.Name)
+	layoutHeight := context.Int(layoutHeightFlag.Name)
 
 	request := &models.SolveCommandRequest{}
 

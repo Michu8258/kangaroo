@@ -86,3 +86,37 @@ const (
 	InvalidGuess        SudokuResultType = 3
 	UnsolvableSudoku    SudokuResultType = 4
 )
+
+// ToSudoku converts internal sudoku object to DTO object.
+// Suitable for serialization to json
+func (sudoku *Sudoku) ToSudokuDto() *SudokuDTO {
+	sudokuDto := &SudokuDTO{
+		BoxSize: sudoku.BoxSize,
+		Layout: SudokuLayoutDTO{
+			Height: sudoku.Layout.Height,
+			Width:  sudoku.Layout.Width,
+		},
+		Boxes: types.GenericSlice[*SudokuBoxDTO]{},
+	}
+
+	for _, sudokuBox := range sudoku.Boxes {
+		sudokuBoxDto := &SudokuBoxDTO{
+			Disabled:    sudokuBox.Disabled,
+			IndexRow:    sudokuBox.IndexRow,
+			IndexColumn: sudokuBox.IndexColumn,
+			Cells:       types.GenericSlice[*SudokuCellDTO]{},
+		}
+
+		for _, sudokuCell := range sudokuBox.Cells {
+			sudokuBoxDto.Cells = append(sudokuBoxDto.Cells, &SudokuCellDTO{
+				Value:            sudokuCell.Value,
+				IndexRowInBox:    sudokuCell.IndexRowInBox,
+				IndexColumnInBox: sudokuCell.IndexColumnInBox,
+			})
+		}
+
+		sudokuDto.Boxes = append(sudokuDto.Boxes, sudokuBoxDto)
+	}
+
+	return sudokuDto
+}

@@ -9,6 +9,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// TODO presets commands family
+// TODO save sudoku as json
+
 func main() {
 	settings := createSettings()
 
@@ -16,7 +19,7 @@ func main() {
 		Name:           "Kangaroo",
 		Usage:          "sudoku puzzle solution",
 		Version:        "0.0.1",
-		DefaultCommand: "solve",
+		DefaultCommand: "help",
 		Authors: []*cli.Author{
 			{
 				Name:  "The author",
@@ -33,6 +36,7 @@ func main() {
 		},
 		Commands: []*cli.Command{
 			commands.SolveCommand(settings),
+			commands.CreateCommand(settings),
 		},
 	}
 
