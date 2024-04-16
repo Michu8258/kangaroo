@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/types"
 )
@@ -17,6 +18,7 @@ func validateSudokuValues(sudoku *models.Sudoku) []error {
 	for _, subSudoku := range sudoku.SubSudokus {
 		for _, subSudokuBox := range subSudoku.Boxes {
 			errs = append(errs, validateCellsCollection(
+				sudoku,
 				sudoku.BoxSize,
 				subSudokuBox.Cells,
 				"box",
@@ -28,6 +30,7 @@ func validateSudokuValues(sudoku *models.Sudoku) []error {
 
 		for _, subSudokuLine := range subSudoku.ChildLines {
 			errs = append(errs, validateCellsCollection(
+				sudoku,
 				sudoku.BoxSize,
 				subSudokuLine.Cells,
 				subSudokuLine.LineType,
@@ -43,7 +46,7 @@ func validateSudokuValues(sudoku *models.Sudoku) []error {
 
 // validateCellsCollection check if every cell with value has a value within an expected range,
 // and if the value is not duplicated within cells collection (box, row, columns).
-func validateCellsCollection(boxSize int8, cells types.GenericSlice[*models.SudokuCell],
+func validateCellsCollection(sudoku *models.Sudoku, boxSize int8, cells types.GenericSlice[*models.SudokuCell],
 	collectionType string, cellsErrorSetter func()) []error {
 
 	errs := []error{}
@@ -59,25 +62,20 @@ func validateCellsCollection(boxSize int8, cells types.GenericSlice[*models.Sudo
 
 		if *value < minimumCellValue || *value > maximumCellValue {
 			errs = append(errs, fmt.Errorf(
-				"invalid cell value. value is %d, but must be in range %d to %d inclusively. "+
-					"Containing box row index %d and column index %d. Cell row index %d and column index %d",
+				"invalid cell %s value. Value is %d, but must be in range %d to %d inclusively",
+				helpers.GetCellCoordinatesString(sudoku, cell.Box, cell, true),
 				*value,
-				minimumCellValue, maximumCellValue,
-				cell.Box.IndexRow, cell.Box.IndexColumn,
-				cell.IndexRowInBox, cell.IndexColumnInBox,
-			))
+				minimumCellValue, maximumCellValue))
 
 			cellsErrorSetter()
 		}
 
 		if slices.Contains(alreadyExistingValues, *value) {
 			errs = append(errs, fmt.Errorf(
-				"duplicated cell value %d in %s. "+
-					"Containing box row index %d and column index %d. Cell row index %d and column index %d",
-				*value, collectionType,
-				cell.Box.IndexRow, cell.Box.IndexColumn,
-				cell.IndexRowInBox, cell.IndexColumnInBox,
-			))
+				"duplicated cell %s value %d in %s",
+				helpers.GetCellCoordinatesString(sudoku, cell.Box, cell, true),
+				*value,
+				collectionType))
 			cellsErrorSetter()
 		}
 

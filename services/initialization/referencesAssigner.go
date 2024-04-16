@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/types"
 )
@@ -134,9 +135,9 @@ func getSudokuCellReference(sudoku *models.Sudoku, subSudoku *models.SubSudoku, 
 
 	if sudokuBox == nil {
 		return nil, fmt.Errorf(
-			"could not find sudoku box when constructing a sudoku line (%s). Was looking for box with "+
-				"row index of %d and column index of %d",
-			lineType, containingBoxAbsoluteRowIndex, containingBoxAbsoluteColumnIndex)
+			"could not find sudoku box when constructing a sudoku line (%s). Was looking for box %s",
+			lineType,
+			helpers.GetCoordinatesString(containingBoxAbsoluteRowIndex+1, containingBoxAbsoluteColumnIndex+1, true))
 	}
 
 	sudokuCell := sudokuBox.Cells.FirstOrDefault(nil, func(cell *models.SudokuCell) bool {
@@ -145,11 +146,13 @@ func getSudokuCellReference(sudoku *models.Sudoku, subSudoku *models.SubSudoku, 
 
 	if sudokuCell == nil {
 		return nil, fmt.Errorf(
-			"sudoku box was found when constructing a sudoku line (%s). Box row index %d and column index %d. "+
-				"The box does not contain a cell with row index %d and column index %d",
+			"sudoku box %s was found when constructing a sudoku line (%s). The box does not contain a cell %s",
+			helpers.GetCoordinatesString(containingBoxAbsoluteRowIndex+1, containingBoxAbsoluteColumnIndex+1, true),
 			lineType,
-			containingBoxAbsoluteRowIndex, containingBoxAbsoluteColumnIndex,
-			containingBoxCellRowIndex, containingBoxCellColumnIndex)
+			helpers.GetCoordinatesString(
+				helpers.GetCellNumber(sudoku.BoxSize, containingBoxAbsoluteRowIndex, containingBoxCellRowIndex),
+				helpers.GetCellNumber(sudoku.BoxSize, containingBoxAbsoluteColumnIndex, containingBoxCellColumnIndex),
+				true))
 	}
 
 	return sudokuCell, nil

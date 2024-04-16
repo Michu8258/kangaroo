@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 	guid "github.com/nu7hatch/gouuid"
 )
@@ -69,9 +70,9 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 
 	if topLeftSubSudokuBox == nil {
 		return fmt.Errorf(
-			"cannot locate sudoku box with row index %d and column index %d when attempting to build "+
-				"sub-sudoku. Those are coordinates of top left sudoku box of potential sub-sudoku",
-			startRowIndex, startColumnIndex)
+			"cannot locate sudoku box %s when attempting to build sub-sudoku. "+
+				"Those are coordinates of top left sudoku box of potential sub-sudoku",
+			helpers.GetCoordinatesString(startRowIndex+1, startColumnIndex+1, true))
 	}
 
 	if topLeftSubSudokuBox.Disabled {
@@ -93,9 +94,9 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 
 			if potentialSubSudokuBox == nil {
 				return fmt.Errorf(
-					"cannot locate sudoku box with row index %d and column index %d when attempting to find "+
+					"cannot locate sudoku box %s when attempting to find "+
 						"potential sub-sudoku box",
-					startRowIndex, startColumnIndex)
+					helpers.GetCoordinatesString(startRowIndex+1, startColumnIndex+1, true))
 			}
 
 			if potentialSubSudokuBox.Disabled {
@@ -145,10 +146,8 @@ func validateBoxesAssignments(sudoku *models.Sudoku) error {
 
 		if subSudoku == nil {
 			return fmt.Errorf(
-				"found a sudoku box that is not a part of any sub-sudoku. "+
-					"Box row index %d, box column index %d",
-				box.IndexRow,
-				box.IndexColumn)
+				"found a sudoku box %s that is not a part of any sub-sudoku",
+				helpers.GetBoxCoordinatesString(box, true))
 		}
 	}
 

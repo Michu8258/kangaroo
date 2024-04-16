@@ -5,13 +5,11 @@ import (
 	"github.com/Michu8258/kangaroo/models"
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
 	"github.com/Michu8258/kangaroo/services/dataInputs"
-	"github.com/Michu8258/kangaroo/services/initialization"
 	"github.com/Michu8258/kangaroo/services/printers"
 	"github.com/Michu8258/kangaroo/types"
 	"github.com/urfave/cli/v2"
 )
 
-// TODO - test algorithm agains more sudoku cases,
 // TODO - test algorithm against unsolvable sudoku,
 
 // SolveCommand provides solve sudoku command configuration
@@ -58,16 +56,10 @@ func solveCommandHandler(request *models.SolveCommandRequest, settings *models.S
 		return nil
 	}
 
-	sudoku := rawSudoku.ToSudoku()
-	errs := initialization.InitializeSudoku(sudoku, settings)
-	if len(errs) >= 1 {
-		printers.PrintErrors("Invalid sudoku configuration", consolePrinter, errs...)
+	sudoku, ok := executeSudokuInitialization(rawSudoku, settings, consolePrinter)
+	if !ok {
 		return nil
 	}
-
-	printSudokuConfig(sudoku, consolePrinter)
-	printSudoku("Provided sudoku input:", sudoku, settings, consolePrinter)
-	consolePrinter.PrintNewLine()
 
 	solved, errs := crook.SolveWithCrookMethod(sudoku, settings)
 	if !solved {

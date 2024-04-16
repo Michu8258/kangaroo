@@ -8,7 +8,6 @@ import (
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/services/dataInputs"
 	"github.com/Michu8258/kangaroo/services/dataOutputs"
-	"github.com/Michu8258/kangaroo/services/initialization"
 	"github.com/Michu8258/kangaroo/services/printers"
 	"github.com/Michu8258/kangaroo/types"
 	"github.com/urfave/cli/v2"
@@ -68,16 +67,10 @@ func createCommandHandler(request *models.CreateCommandRequest, settings *models
 		return nil
 	}
 
-	sudoku := sudokuDto.ToSudoku()
-	errs := initialization.InitializeSudoku(sudoku, settings)
-	if len(errs) >= 1 {
-		printers.PrintErrors("Invalid sudoku configuration", consolePrinter, errs...)
+	sudoku, ok := executeSudokuInitialization(sudokuDto, settings, consolePrinter)
+	if !ok {
 		return nil
 	}
-
-	printSudokuConfig(sudoku, consolePrinter)
-	printSudoku("Provided sudoku input:", sudoku, settings, consolePrinter)
-	consolePrinter.PrintNewLine()
 
 	consolePrinter.PrintPrimary("Saving results:")
 	consolePrinter.PrintNewLine()

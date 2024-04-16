@@ -3,6 +3,7 @@ package initialization
 import (
 	"fmt"
 
+	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 )
 
@@ -100,9 +101,8 @@ func validateBoxesPresence(sudoku *models.Sudoku) []error {
 
 			if box == nil {
 				errs = append(errs, fmt.Errorf(
-					"sudoku box with row index %d and column index %d is missing",
-					rowIndex,
-					columnIndex))
+					"sudoku box %s is missing",
+					helpers.GetCoordinatesString(rowIndex+1, columnIndex+1, true)))
 
 				continue
 			}
@@ -130,9 +130,9 @@ func validateCellsPresence(sudoku *models.Sudoku, box *models.SudokuBox) error {
 
 	if actualCellsCount != expectedCellsCount {
 		return fmt.Errorf(
-			"invalid amount of cells for sudoku box with row index %d and column index %d. expected %d cells, got %d cells",
-			box.IndexRow,
-			box.IndexColumn,
+			"invalid amount of cells for sudoku box %s. "+
+				"Expected %d cells, got %d cells",
+			helpers.GetCoordinatesString(box.IndexRow+1, box.IndexColumn+1, true),
 			expectedCellsCount,
 			actualCellsCount)
 	}
@@ -147,11 +147,9 @@ func validateCellsPresence(sudoku *models.Sudoku, box *models.SudokuBox) error {
 
 			if cell == nil {
 				return fmt.Errorf(
-					"sudoku box with row index %d and column index %d is missing a cell with row index %d and column index %d",
-					box.IndexRow,
-					box.IndexColumn,
-					rowIndex,
-					columnIndex)
+					"sudoku box %s is missing a cell %s",
+					helpers.GetCoordinatesString(rowIndex+1, columnIndex+1, true),
+					helpers.GetCellCoordinatesString(sudoku, box, cell, true))
 			}
 		}
 	}
@@ -180,14 +178,11 @@ func validateCellsInitialValues(sudoku *models.Sudoku) []error {
 
 				if *cell.Value < minimumValue || *cell.Value > maximumValue {
 					errs = append(errs, fmt.Errorf(
-						"box with row index %d and column index %d has a cell "+
-							"(cell row index %d and column index %d) with value outside of "+
-							"allowed range. got %d, acceptable values are from range "+
-							"from %d to %d inclisive",
-						boxRowIndex,
-						boxColumnIndex,
-						cell.IndexRowInBox,
-						cell.IndexColumnInBox,
+						"box %s has a cell %s with value outside of "+
+							"allowed range. Got %d, acceptable values are from range "+
+							"from %d to %d incllusive",
+						helpers.GetBoxCoordinatesString(box, true),
+						helpers.GetCellCoordinatesString(sudoku, box, cell, true),
 						*cell.Value,
 						minimumValue,
 						maximumValue))

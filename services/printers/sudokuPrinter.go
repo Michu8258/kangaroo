@@ -19,6 +19,14 @@ type sudokuPrintoutConfig struct {
 
 // PrintSudoku prints entire sudoku puzzle pseudo-graphical representation to the console
 func PrintSudoku(sudoku *models.Sudoku, settings *models.Settings, printer types.Printer) {
+	defer func() {
+		if err := recover(); err != nil {
+			printer.PrintNewLine()
+			printer.PrintError("Failed to render a sudoku puzzle.")
+			printer.PrintNewLine()
+		}
+	}()
+
 	printoutConfig := buildSudokuPrintoutConfig(sudoku, settings)
 	printTopBorderLine(sudoku, printoutConfig, printer)
 
