@@ -44,7 +44,7 @@ func executePreemptiveSetsLogic(sudoku *models.Sudoku, settings *models.Settings
 			// box itself
 			boxSet := findShortestPreemptiveSet(subSudokuBox.Cells, settings, "box")
 			if boxSet != nil {
-				siblingWithNoPotentialValues, didModify := processPreemptiveSet(boxSet, settings)
+				siblingWithNoPotentialValues, didModify := processPreemptiveSet(sudoku, boxSet, settings)
 				anyPreemptiveSetHandled = anyPreemptiveSetHandled || didModify
 				anyCellWithEmptyPotentialValues = anyCellWithEmptyPotentialValues || siblingWithNoPotentialValues
 			}
@@ -78,6 +78,7 @@ func executePreemptiveSetsLogic(sudoku *models.Sudoku, settings *models.Settings
 	}
 
 	if settings.UseDebugPrints {
+		printPotentialValues(sudoku, "PREEMPTIVE SETS HANDLER - FINISH")
 		fmt.Printf("Finished preemptive sets logic execution. Any set processed: %v, "+
 			"any cell with zero potential values: %v.\n",
 			anyPreemptiveSetHandled, anyCellWithEmptyPotentialValues)
@@ -119,7 +120,7 @@ func iterateBoxLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku, subSudo
 
 		theSet := findShortestPreemptiveSet(theLine.Cells, settings, lineType)
 		if theSet != nil {
-			siblingWithNoPotentialValues, didModify := processPreemptiveSet(theSet, settings)
+			siblingWithNoPotentialValues, didModify := processPreemptiveSet(sudoku, theSet, settings)
 			anyPreemptiveSetHandled = anyPreemptiveSetHandled || didModify
 			anyCellWithEmptyPotentialValues = anyCellWithEmptyPotentialValues || siblingWithNoPotentialValues
 		}
@@ -130,66 +131,78 @@ func iterateBoxLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku, subSudo
 
 // findShortestPreemptiveSet finds the preemptive set in the cells colection - the
 // shortest one. Returns preemptiveSet data if set was founc.
-func findShortestPreemptiveSet(cells types.GenericSlice[*models.SudokuCell], settings *models.Settings,
+func findShortestPreemptiveSet(cellsGroup types.GenericSlice[*models.SudokuCell], settings *models.Settings,
 	collectionType string) *preemptiveSet {
 
 	preemptiveSetCells := types.GenericSlice[*models.SudokuCell]{}
-	for _, cell := range cells {
-		if cell.PotentialValues == nil {
+	for _, currentCell := range cellsGroup {
+		if currentCell.PotentialValues == nil {
 			continue
 		}
 
-		siblingCellsWithPotentialValues := cells.Where(func(c *models.SudokuCell) bool {
-			return c.Id != cell.Id && c.PotentialValues != nil && len(*c.PotentialValues) >= 1
+		siblingCellsWithPotentialValues := cellsGroup.Where(func(cell *models.SudokuCell) bool {
+			return cell.Id != currentCell.Id && cell.PotentialValues != nil && len(*cell.PotentialValues) >= 1
 		})
 
+		// if no sibling cell to the give one has any potential value,
+		// there is no point in further checking
 		if len(siblingCellsWithPotentialValues) < 1 {
 			continue
 		}
 
-		for _, siblingCell := range siblingCellsWithPotentialValues {
-			// checking if we have mathing potential values
-			if cell.PotentialValues.EqualContent(*siblingCell.PotentialValues) {
-				// in case we found the preemptive set, we also have to make sure that
-				// ther is no other sibling cell with less amount of possible values.
-				// this is because possible values of the sibling cell may be a subset
-				// of possible values of cell that is consired part of a preemptive set
-				if siblingCellsWithPotentialValues.Any(func(sibCell *models.SudokuCell) bool {
-					return len(*sibCell.PotentialValues) < len(*cell.PotentialValues)
-				}) {
-					continue
-				}
+		// searching for all sibling cells that have exactly the same potential
+		// values as the given one - currentCell
+		siblingCellsWithEqualPotentialValues := siblingCellsWithPotentialValues.Where(func(cell *models.SudokuCell) bool {
+			return currentCell.PotentialValues.EqualContent(*cell.PotentialValues)
+		})
 
-				// we also need to ommit cases where all cells (the current one and all
-				// siblings with possible values) has exactly the same possible values.
-				// that case is simply inconclusive
-				if siblingCellsWithPotentialValues.All(func(sibCell *models.SudokuCell) bool {
-					return sibCell.PotentialValues.EqualContent(*cell.PotentialValues)
-				}) {
-					continue
-				}
-
-				// if count of potential values is less that already found one, we want the shorter one (new match)
-				if len(preemptiveSetCells) > 0 && len(*cell.PotentialValues) < len(*preemptiveSetCells[0].PotentialValues) {
-					clear(preemptiveSetCells)
-				}
-
-				// add cells if not already in the preemptive set
-				if !slices.Contains(preemptiveSetCells, cell) {
-					preemptiveSetCells = append(preemptiveSetCells, cell)
-				}
-
-				if !slices.Contains(preemptiveSetCells, siblingCell) {
-					preemptiveSetCells = append(preemptiveSetCells, siblingCell)
-				}
-			}
+		// if there is no csibling cell with equal potential values,
+		// there is no preemptive set here (for currentCell)
+		if len(siblingCellsWithEqualPotentialValues) < 1 {
+			continue
 		}
+
+		// if amount of cells with same potential values is less than
+		// amount of potential values, then it is not a preemptive set
+		// -1 because we are counting siblings (without current cell)
+		if len(siblingCellsWithEqualPotentialValues) < len(*currentCell.PotentialValues)-1 {
+			continue
+		}
+
+		// in case we found the preemptive set, we also have to make sure that
+		// there is no other sibling cell with less amount of possible values.
+		// this is because possible values of the sibling cell may be a subset
+		// of possible values of cell that is consired part of a preemptive set
+		if siblingCellsWithPotentialValues.Any(func(cell *models.SudokuCell) bool {
+			return len(*cell.PotentialValues) < len(*currentCell.PotentialValues)
+		}) {
+			continue
+		}
+
+		// we also need to ommit cases where all cells (the current one and all
+		// siblings with possible values) has exactly the same possible values.
+		// that case is simply inconclusive
+		if siblingCellsWithPotentialValues.All(func(cell *models.SudokuCell) bool {
+			return cell.PotentialValues.EqualContent(*currentCell.PotentialValues)
+		}) {
+			continue
+		}
+
+		// if we found set with same length, that does not do any better
+		if len(preemptiveSetCells) > 0 && len(*currentCell.PotentialValues) >= len(*preemptiveSetCells[0].PotentialValues) {
+			continue
+		}
+
+		// now either we have first correct preemptive set, or one with less potential values
+		clear(preemptiveSetCells)
+		preemptiveSetCells = append(preemptiveSetCells, currentCell)
+		preemptiveSetCells = append(preemptiveSetCells, siblingCellsWithEqualPotentialValues...)
 	}
 
 	if len(preemptiveSetCells) >= 1 {
 		result := &preemptiveSet{
 			CellsInSet:           preemptiveSetCells,
-			WholeCollectionCells: cells,
+			WholeCollectionCells: cellsGroup,
 			Values:               *preemptiveSetCells[0].PotentialValues,
 		}
 
@@ -217,7 +230,7 @@ func findShortestPreemptiveSet(cells types.GenericSlice[*models.SudokuCell], set
 // Returns pair of bools where FIRST is indicating if any of the sibling cell is left
 // without any potential value, SECOND indicates if any cell's potential values was
 // modified.
-func processPreemptiveSet(preemptiveSet *preemptiveSet, settings *models.Settings) (bool, bool) {
+func processPreemptiveSet(sudoku *models.Sudoku, preemptiveSet *preemptiveSet, settings *models.Settings) (bool, bool) {
 	appliedAnyPotentialValuesChange := false
 	anyCellWithEmptyPotentialValues := false
 	preemptiveSetCellsIds := []guid.UUID{}
@@ -234,20 +247,26 @@ func processPreemptiveSet(preemptiveSet *preemptiveSet, settings *models.Setting
 			// in case there is not change in potential values in the cell
 			// we may skip assignment
 			if cell.PotentialValues.EqualContent(truncatedPotentialValues) {
+				if settings.UseDebugPrints {
+					fmt.Printf("Skipping replacement of potential values %v - no change in potential values. "+
+						"Box absolute indexes (row: %d, column: %d), cell in box indexes (row: %d, column: %d).\n",
+						*cell.PotentialValues,
+						cell.Box.IndexRow, cell.Box.IndexColumn,
+						cell.IndexRowInBox, cell.IndexColumnInBox)
+				}
 				continue
 			}
 
 			if len(truncatedPotentialValues) < 1 {
 				anyCellWithEmptyPotentialValues = true
 				if settings.UseDebugPrints {
-					fmt.Println(cell.PotentialValues, preemptiveSet.Values, truncatedPotentialValues)
 					fmt.Println("removing potential values from sibling cell of preemptive " +
 						"cells leads to leaving no potential values for the cell")
 				}
 			}
 
 			if settings.UseDebugPrints {
-				fmt.Printf("Replacing existing potential values %v, with truncagted slice %v. "+
+				fmt.Printf("Replacing existing potential values %v, with truncated slice %v. "+
 					"Box absolute indexes (row: %d, column: %d), cell in box indexes (row: %d, column: %d).\n",
 					*cell.PotentialValues, truncatedPotentialValues,
 					cell.Box.IndexRow, cell.Box.IndexColumn,
@@ -261,6 +280,10 @@ func processPreemptiveSet(preemptiveSet *preemptiveSet, settings *models.Setting
 				fmt.Printf("Potential values of cell after replacement: %v.\n", *cell.PotentialValues)
 			}
 		}
+	}
+
+	if appliedAnyPotentialValuesChange && settings.UseDebugPrints {
+		printPotentialValues(sudoku, "PREEMPTIVE SETS HANDLER - PROCESSING UPDATE")
 	}
 
 	return anyCellWithEmptyPotentialValues, appliedAnyPotentialValuesChange

@@ -71,7 +71,7 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 	}
 
 	if settings.UseDebugPrints {
-		printPotentialValues(sudoku)
+		printPotentialValues(sudoku, "POTENTIAL VALUES FINDER")
 	}
 
 	return anyPotentialValuesSliceIsEmpty, errs
@@ -132,43 +132,4 @@ func logNoPotentialValues(settings *models.Settings, cell *models.SudokuCell) {
 			cell.Box.IndexRow, cell.Box.IndexColumn,
 			cell.IndexRowInBox, cell.IndexColumnInBox)
 	}
-}
-
-// printPotentialValues prints debug information to the console when called
-func printPotentialValues(sudoku *models.Sudoku) {
-	fmt.Println("==================== POTENTIAL VALUES ====================")
-
-	cellValuePrinter := func(v *int) string {
-		if v == nil {
-			return "-"
-		}
-
-		return fmt.Sprintf("%v", *v)
-	}
-
-	potentialValuesPrinter := func(potentialValues *types.GenericSlice[int]) string {
-		if potentialValues == nil {
-			return "-"
-		}
-
-		return fmt.Sprintf("%v", *potentialValues)
-	}
-
-	for subSudokuIndex, subSudoku := range sudoku.SubSudokus {
-		cellCount := 0
-		for _, subSudokuBox := range subSudoku.Boxes {
-			for _, subSudokuBoxCell := range subSudokuBox.Cells {
-				cellCount += 1
-				fmt.Printf("Sub sudoku index: %d, cell count %d, box indices (row: %d, column: %d), "+
-					"cell indices (row: %d, column: %d), value %s, potential values %s\n",
-					subSudokuIndex,
-					cellCount,
-					subSudokuBoxCell.Box.IndexRow, subSudokuBoxCell.Box.IndexColumn,
-					subSudokuBoxCell.IndexRowInBox, subSudokuBoxCell.IndexColumnInBox,
-					cellValuePrinter(subSudokuBoxCell.Value),
-					potentialValuesPrinter(subSudokuBoxCell.PotentialValues))
-			}
-		}
-	}
-	fmt.Println("================== POTENTIAL VALUES END ==================")
 }
