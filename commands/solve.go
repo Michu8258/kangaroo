@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
@@ -10,6 +12,10 @@ import (
 	"github.com/Michu8258/kangaroo/types"
 	"github.com/urfave/cli/v2"
 )
+
+// TODO - test algorithm agains more sudoku cases,
+// TODO - test algorithm against unsolvable sudoku,
+// TODO - handle saving results to json and txt
 
 // SolveCommand provides solve sudoku command configuration
 func SolveCommand(settings *models.Settings) *cli.Command {
@@ -73,14 +79,14 @@ func solveCommandHandler(request *models.SolveCommandRequest, settings *models.S
 	sudoku := rawSudoku.ToSudoku()
 	errs := initialization.InitializeSudoku(sudoku, settings)
 	if len(errs) >= 1 {
-		printers.PrintErrors("Invalid sudoku configuration", consolePrinter, err)
+		printers.PrintErrors("Invalid sudoku configuration", consolePrinter, errs...)
 		return nil
 	}
 
-	// TODO printout of important settings
+	printSudokuConfig(request, consolePrinter)
 	printSudoku("Provided sudoku input:", sudoku, settings, consolePrinter)
 
-	// TODO - add spinner here
+	// TODO - add spinner here ?
 	// https://github.com/charmbracelet/bubbletea/blob/master/examples/spinners/main.go
 	solved, errs := crook.SolveWithCrookMethod(sudoku, settings)
 	if !solved {
@@ -109,9 +115,22 @@ func getSudokuInputRawData(request *models.SolveCommandRequest, settings *models
 	return dataInputs.ReadFromConsole(request, settings)
 }
 
+// printSudokuConfig prints sudoku configuration with provided printer
+func printSudokuConfig(request *models.SolveCommandRequest, printer types.Printer) {
+	printer.PrintPrimary("Selected sudoku puzzle configuration:")
+	printer.PrintNewLine()
+	printer.PrintDefault(fmt.Sprintf("- sudoku box size %d", *request.BoxSize))
+	printer.PrintNewLine()
+	printer.PrintDefault(fmt.Sprintf("- sudoku layout width %d", *request.LayoutWidth))
+	printer.PrintNewLine()
+	printer.PrintDefault(fmt.Sprintf("- sudoku layout height %d", *request.LayoutHeight))
+	printer.PrintNewLine()
+	printer.PrintNewLine()
+}
+
 // printSudoku prints sudoku to standard out
 func printSudoku(description string, sudoku *models.Sudoku, settings *models.Settings, printer types.Printer) {
-	printer.PrintDefault(description)
+	printer.PrintPrimary(description)
 	printer.PrintNewLine()
 	printers.PrintSudoku(sudoku, settings, printer)
 }

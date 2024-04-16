@@ -18,8 +18,11 @@ type promptSelect[T comparable] struct {
 	title        string
 	activeChoice PromptSelectOption[T]
 	choices      []PromptSelectOption[T]
+	quit         bool
 }
 
+// PromptMakeSelectChoice wraps logic for promptin the user to select
+// one of selected option (with default option index).
 func PromptMakeSelectChoice[T comparable](title string, options []PromptSelectOption[T],
 	initialChoiceIndex int) (PromptSelectOption[T], error) {
 
@@ -42,20 +45,24 @@ func PromptMakeSelectChoice[T comparable](title string, options []PromptSelectOp
 	return options[initialChoiceIndex], fmt.Errorf("failed to get console select input value")
 }
 
+// Init iniitalizes tea model state
 func (m promptSelect[T]) Init() tea.Cmd {
 	return nil
 }
 
+// Update updates tea model state
 func (m promptSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "esc":
+			m.quit = true
 			return m, tea.Quit
 
 		case "enter":
 			// Send the choice on the channel and exit.
 			m.activeChoice = m.choices[m.cursor]
+			m.quit = true
 			return m, tea.Quit
 
 		case "down", "j":
@@ -75,7 +82,12 @@ func (m promptSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// view renders output based on model state
 func (m promptSelect[T]) View() string {
+	if m.quit {
+		return ""
+	}
+
 	s := strings.Builder{}
 	s.WriteString(types.OutputStyles.PrimaryStyle.Render(m.title))
 	s.WriteString("\n")

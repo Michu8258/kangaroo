@@ -44,7 +44,7 @@ func main() {
 func createSettings() *models.Settings {
 	return &models.Settings{
 		MinimumLayoutSizeInclusive:       2,
-		MaximumLayoutSizeInclusive:       6,
+		MaximumLayoutSizeInclusive:       5,
 		DefaultLayoutSize:                3,
 		MinimumBoxSizeInclusive:          2,
 		MaximumBoxSizeInclusive:          5,
