@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/printer"
 	guid "github.com/nu7hatch/gouuid"
 )
 
@@ -29,28 +31,29 @@ type preemptiveSet struct {
 // true which indicates that sudoku puzzle is unsolvable
 //
 // - error if any occures
-func executePreemptiveSetsLogic(sudoku *models.Sudoku, settings *models.Settings) (bool, bool, error) {
+func executePreemptiveSetsLogic(sudoku *models.Sudoku, settings *models.Settings,
+	debugPrinter printer.Printer) (bool, bool, error) {
+
 	anyPreemptiveSetHandled := false
 	anyCellWithEmptyPotentialValues := false
 
-	if settings.UseDebugPrints {
-		fmt.Println("Starting preemptive sets logic execution.")
-	}
+	debugPrinter.PrintDefault("Starting preemptive sets logic execution.")
+	debugPrinter.PrintNewLine()
 
 	for _, subSudoku := range sudoku.SubSudokus {
 		// for every box in the subsudoku we want to take care of preemptive sets
 		for _, subSudokuBox := range subSudoku.Boxes {
 			// box itself
-			boxSet := findShortestPreemptiveSet(subSudokuBox.Cells, settings, "box")
+			boxSet := findShortestPreemptiveSet(sudoku, subSudokuBox.Cells, debugPrinter, "box")
 			if boxSet != nil {
-				siblingWithNoPotentialValues, didModify := processPreemptiveSet(sudoku, boxSet, settings)
+				siblingWithNoPotentialValues, didModify := processPreemptiveSet(sudoku, boxSet, settings, debugPrinter)
 				anyPreemptiveSetHandled = anyPreemptiveSetHandled || didModify
 				anyCellWithEmptyPotentialValues = anyCellWithEmptyPotentialValues || siblingWithNoPotentialValues
 			}
 
 			// rows
 			handleSuccess, missingPotentialValues, err := iterateBoxLines(sudoku,
-				subSudoku, subSudokuBox, models.SudokuLineTypeRow, settings,
+				subSudoku, subSudokuBox, models.SudokuLineTypeRow, settings, debugPrinter,
 				func(cell *models.SudokuCell, lineIndex int8) bool {
 					return cell.IndexRowInBox == lineIndex && cell.IndexColumnInBox == 0
 				})
@@ -63,7 +66,7 @@ func executePreemptiveSetsLogic(sudoku *models.Sudoku, settings *models.Settings
 
 			// columns
 			handleSuccess, missingPotentialValues, err = iterateBoxLines(sudoku,
-				subSudoku, subSudokuBox, models.SudokuLineTypeColumn, settings,
+				subSudoku, subSudokuBox, models.SudokuLineTypeColumn, settings, debugPrinter,
 				func(cell *models.SudokuCell, lineIndex int8) bool {
 					return cell.IndexRowInBox == 0 && cell.IndexColumnInBox == lineIndex
 				})
@@ -76,11 +79,14 @@ func executePreemptiveSetsLogic(sudoku *models.Sudoku, settings *models.Settings
 		}
 	}
 
+	debugPrinter.PrintDefault(fmt.Sprintf(
+		"Finished preemptive sets logic execution. Any set processed: %v, "+
+			"any cell with zero potential values: %v.",
+		anyPreemptiveSetHandled, anyCellWithEmptyPotentialValues))
+	debugPrinter.PrintNewLine()
+
 	if settings.UseDebugPrints {
-		printPotentialValues(sudoku, "PREEMPTIVE SETS HANDLER - FINISH")
-		fmt.Printf("Finished preemptive sets logic execution. Any set processed: %v, "+
-			"any cell with zero potential values: %v.\n",
-			anyPreemptiveSetHandled, anyCellWithEmptyPotentialValues)
+		printPotentialValues(sudoku, "PREEMPTIVE SETS HANDLER - FINISH", debugPrinter)
 	}
 
 	return anyPreemptiveSetHandled, anyCellWithEmptyPotentialValues, nil
@@ -91,7 +97,8 @@ func executePreemptiveSetsLogic(sudoku *models.Sudoku, settings *models.Settings
 // processed successfully. SECOND flag indicates emptiness of at least one sibling cell of
 // cells slice containing the preemptive set. ERROR indicates an error occurence.
 func iterateBoxLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku, subSudokuBox *models.SudokuBox,
-	lineType string, settings *models.Settings, cellFilter func(cell *models.SudokuCell, lineIndex int8) bool) (bool, bool, error) {
+	lineType string, settings *models.Settings, debugPrinter printer.Printer,
+	cellFilter func(cell *models.SudokuCell, lineIndex int8) bool) (bool, bool, error) {
 
 	anyPreemptiveSetHandled := false
 	anyCellWithEmptyPotentialValues := false
@@ -117,9 +124,9 @@ func iterateBoxLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku, subSudo
 				lineType, subSudokuBox.IndexRow, subSudokuBox.IndexColumn)
 		}
 
-		theSet := findShortestPreemptiveSet(theLine.Cells, settings, lineType)
+		theSet := findShortestPreemptiveSet(sudoku, theLine.Cells, debugPrinter, lineType)
 		if theSet != nil {
-			siblingWithNoPotentialValues, didModify := processPreemptiveSet(sudoku, theSet, settings)
+			siblingWithNoPotentialValues, didModify := processPreemptiveSet(sudoku, theSet, settings, debugPrinter)
 			anyPreemptiveSetHandled = anyPreemptiveSetHandled || didModify
 			anyCellWithEmptyPotentialValues = anyCellWithEmptyPotentialValues || siblingWithNoPotentialValues
 		}
@@ -130,8 +137,8 @@ func iterateBoxLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku, subSudo
 
 // findShortestPreemptiveSet finds the preemptive set in the cells colection - the
 // shortest one. Returns preemptiveSet data if set was founc.
-func findShortestPreemptiveSet(cellsGroup models.GenericSlice[*models.SudokuCell], settings *models.Settings,
-	collectionType string) *preemptiveSet {
+func findShortestPreemptiveSet(sudoku *models.Sudoku, cellsGroup models.GenericSlice[*models.SudokuCell],
+	debugPrinter printer.Printer, collectionType string) *preemptiveSet {
 
 	preemptiveSetCells := models.GenericSlice[*models.SudokuCell]{}
 	for _, currentCell := range cellsGroup {
@@ -205,18 +212,16 @@ func findShortestPreemptiveSet(cellsGroup models.GenericSlice[*models.SudokuCell
 			Values:               *preemptiveSetCells[0].PotentialValues,
 		}
 
-		if settings.UseDebugPrints {
-			fmt.Printf(
-				"Found the preemptive set in %s with values %v. Box absolute index (row: %d, column %d), "+
-					"cell in the box index (row: %d, column %d). Cells Total: %d, cells in set: %d. "+
-					"Collection type: '%s'.\n",
-				collectionType, result.Values,
-				result.CellsInSet[0].Box.IndexRow, result.CellsInSet[0].Box.IndexColumn,
-				result.CellsInSet[0].IndexRowInBox, result.CellsInSet[0].IndexColumnInBox,
-				len(result.WholeCollectionCells),
-				len(result.CellsInSet),
-				collectionType)
-		}
+		debugPrinter.PrintDefault(fmt.Sprintf(
+			"Found the preemptive set in %s with values %v. Cell %s. Cells Total: %d, cells in set: %d. "+
+				"Collection type: '%s'.",
+			collectionType,
+			result.Values,
+			helpers.GetCellCoordinatesString(sudoku, result.CellsInSet[0].Box, result.CellsInSet[0], true),
+			len(result.WholeCollectionCells),
+			len(result.CellsInSet),
+			collectionType))
+		debugPrinter.PrintNewLine()
 
 		return result
 	}
@@ -229,7 +234,9 @@ func findShortestPreemptiveSet(cellsGroup models.GenericSlice[*models.SudokuCell
 // Returns pair of bools where FIRST is indicating if any of the sibling cell is left
 // without any potential value, SECOND indicates if any cell's potential values was
 // modified.
-func processPreemptiveSet(sudoku *models.Sudoku, preemptiveSet *preemptiveSet, settings *models.Settings) (bool, bool) {
+func processPreemptiveSet(sudoku *models.Sudoku, preemptiveSet *preemptiveSet, settings *models.Settings,
+	debugPrinter printer.Printer) (bool, bool) {
+
 	appliedAnyPotentialValuesChange := false
 	anyCellWithEmptyPotentialValues := false
 	preemptiveSetCellsIds := []guid.UUID{}
@@ -246,43 +253,41 @@ func processPreemptiveSet(sudoku *models.Sudoku, preemptiveSet *preemptiveSet, s
 			// in case there is not change in potential values in the cell
 			// we may skip assignment
 			if cell.PotentialValues.EqualContent(truncatedPotentialValues) {
-				if settings.UseDebugPrints {
-					fmt.Printf("Skipping replacement of potential values %v - no change in potential values. "+
-						"Box absolute indexes (row: %d, column: %d), cell in box indexes (row: %d, column: %d).\n",
-						*cell.PotentialValues,
-						cell.Box.IndexRow, cell.Box.IndexColumn,
-						cell.IndexRowInBox, cell.IndexColumnInBox)
-				}
+				debugPrinter.PrintDefault(fmt.Sprintf(
+					"Skipping replacement of potential values %v - no change in potential values. "+
+						"Cell %s.",
+					*cell.PotentialValues,
+					helpers.GetCellCoordinatesString(sudoku, cell.Box, cell, true)))
+				debugPrinter.PrintNewLine()
+
 				continue
 			}
 
 			if len(truncatedPotentialValues) < 1 {
 				anyCellWithEmptyPotentialValues = true
-				if settings.UseDebugPrints {
-					fmt.Println("removing potential values from sibling cell of preemptive " +
-						"cells leads to leaving no potential values for the cell")
-				}
+				debugPrinter.PrintDefault("Removing potential values from sibling cell of preemptive " +
+					"cells leads to leaving no potential values for the cell.")
+				debugPrinter.PrintNewLine()
 			}
 
-			if settings.UseDebugPrints {
-				fmt.Printf("Replacing existing potential values %v, with truncated slice %v. "+
-					"Box absolute indexes (row: %d, column: %d), cell in box indexes (row: %d, column: %d).\n",
-					*cell.PotentialValues, truncatedPotentialValues,
-					cell.Box.IndexRow, cell.Box.IndexColumn,
-					cell.IndexRowInBox, cell.IndexColumnInBox)
-			}
+			debugPrinter.PrintDefault(fmt.Sprintf(
+				"Replacing existing potential values %v, with truncated slice %v. Cell %s.",
+				*cell.PotentialValues,
+				truncatedPotentialValues,
+				helpers.GetCellCoordinatesString(sudoku, cell.Box, cell, true)))
+			debugPrinter.PrintNewLine()
 
 			cell.PotentialValues = &truncatedPotentialValues
 			appliedAnyPotentialValuesChange = true
 
-			if settings.UseDebugPrints {
-				fmt.Printf("Potential values of cell after replacement: %v.\n", *cell.PotentialValues)
-			}
+			debugPrinter.PrintDefault(fmt.Sprintf(
+				"Potential values of cell after replacement: %v.", *cell.PotentialValues))
+			debugPrinter.PrintNewLine()
 		}
 	}
 
 	if appliedAnyPotentialValuesChange && settings.UseDebugPrints {
-		printPotentialValues(sudoku, "PREEMPTIVE SETS HANDLER - PROCESSING UPDATE")
+		printPotentialValues(sudoku, "PREEMPTIVE SETS HANDLER - PROCESSING UPDATE", debugPrinter)
 	}
 
 	return anyCellWithEmptyPotentialValues, appliedAnyPotentialValuesChange

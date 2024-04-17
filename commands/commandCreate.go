@@ -14,7 +14,7 @@ import (
 )
 
 // CreateCommand provides create command configuration
-func CreateCommand(settings *models.Settings) *cli.Command {
+func CreateCommand(commandConfig *CommandConfig) *cli.Command {
 	return &cli.Command{
 		Name:    "create",
 		Aliases: []string{"c"},
@@ -34,48 +34,50 @@ func CreateCommand(settings *models.Settings) *cli.Command {
 		Action: func(context *cli.Context) error {
 			request := buildCreateCommandRequest(context)
 			filePaths := context.Args().Slice()
-			return createCommandHandler(request, settings, filePaths)
+			return createCommandHandler(request, commandConfig, filePaths)
 		},
 	}
 }
 
 // createCommandHandler is an entry point function to create sudoku data file
-func createCommandHandler(request *models.CreateCommandRequest, settings *models.Settings,
+func createCommandHandler(request *models.CreateCommandRequest, commandConfig *CommandConfig,
 	destinationFilePaths []string) error {
-	consolePrinter := printer.NewTerminalPrinter(settings.SilentConsolePrints)
 
 	if len(destinationFilePaths) < 1 {
-		consolePrinter.PrintError("Please provide at least one argument for output file location.")
-		consolePrinter.PrintNewLine()
+		commandConfig.TerminalPrinter.PrintError(
+			"Please provide at least one argument for output file location.\n")
 		return nil
 	}
 
 	validPaths, errorPaths := validateDestinationFilePaths(destinationFilePaths)
 	if len(errorPaths) > 0 {
-		dataPrinters.PrintErrors("Optput files listed below are not supported", consolePrinter, errorPaths...)
+		dataPrinters.PrintErrors("Optput files listed below are not supported",
+			commandConfig.TerminalPrinter, errorPaths...)
 	}
 
 	if len(validPaths) < 1 {
-		consolePrinter.PrintError("No supported file path to save sudoku data to.")
-		consolePrinter.PrintNewLine()
+		commandConfig.TerminalPrinter.PrintError(
+			"No supported file path to save sudoku data to.\n")
 		return nil
 	}
 
-	sudokuDto, err := dataInputs.ReadFromConsole(request.GetConfigRequest(), settings)
+	sudokuDto, err := dataInputs.ReadFromConsole(request.AsConfigRequest(),
+		commandConfig.Settings, commandConfig.TerminalPrinter, commandConfig.DebugPrinter)
 	if err != nil {
-		dataPrinters.PrintErrors("Invalid sudoku input", consolePrinter, err)
+		dataPrinters.PrintErrors("Invalid sudoku input", commandConfig.TerminalPrinter, err)
 		return nil
 	}
 
-	sudoku, ok := executeSudokuInitialization(sudokuDto, settings, consolePrinter)
+	sudoku, ok := executeSudokuInitialization(sudokuDto, commandConfig.Settings,
+		commandConfig.TerminalPrinter)
 	if !ok {
 		return nil
 	}
 
-	consolePrinter.PrintPrimary("Saving results:")
-	consolePrinter.PrintNewLine()
+	commandConfig.TerminalPrinter.PrintPrimary("Saving results:\n")
 	for _, path := range validPaths {
-		saveToFile(sudoku, request, path, consolePrinter, settings)
+		saveToFile(sudoku, request, path,
+			commandConfig.TerminalPrinter, commandConfig.Settings)
 	}
 
 	return nil

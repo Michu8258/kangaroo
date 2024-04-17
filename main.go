@@ -6,6 +6,7 @@ import (
 
 	"github.com/Michu8258/kangaroo/commands"
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/printer"
 	"github.com/urfave/cli/v2"
 )
 
@@ -15,6 +16,12 @@ import (
 
 func main() {
 	settings := createSettings()
+
+	commandConfig := &commands.CommandConfig{
+		Settings:        settings,
+		TerminalPrinter: printer.NewTerminalPrinter(settings),
+		DebugPrinter:    printer.NewDebugPrinter(settings),
+	}
 
 	app := &cli.App{
 		Name:           "Kangaroo",
@@ -32,12 +39,12 @@ func main() {
 				Name:        "silent",
 				Value:       false,
 				Usage:       "supresses any standard output printing",
-				Destination: &settings.SilentConsolePrints,
+				Destination: &commandConfig.Settings.SilentConsolePrints,
 			},
 		},
 		Commands: []*cli.Command{
-			commands.SolveCommand(settings),
-			commands.CreateCommand(settings),
+			commands.SolveCommand(commandConfig),
+			commands.CreateCommand(commandConfig),
 		},
 	}
 

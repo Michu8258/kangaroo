@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/printer"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -21,22 +22,22 @@ type sudokuValuesPrompt struct {
 
 // PromptSudokuValues wraps logic for prompting user for sudoku values
 // input with respect to prior configuration (box size, layout sizes)
-func PromptSudokuValues(sudokuDto *models.SudokuDTO, settings *models.Settings) error {
+func PromptSudokuValues(sudokuDto *models.SudokuDTO, settings *models.Settings,
+	printer printer.Printer) error {
+
 	failError := fmt.Errorf("failed to get sudoku values from manual input")
 	initialModel, err := buildSudokuValuesPromptModel(sudokuDto, settings)
 	if err != nil {
-		if settings.UseDebugPrints {
-			fmt.Println(err)
-		}
+		printer.PrintError(err.Error())
+		printer.PrintNewLine()
 		return failError
 	}
 
 	program := tea.NewProgram(initialModel)
 	model, err := program.Run()
 	if err != nil {
-		if settings.UseDebugPrints {
-			fmt.Println(err)
-		}
+		printer.PrintError(err.Error())
+		printer.PrintNewLine()
 		return failError
 	}
 

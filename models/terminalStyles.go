@@ -8,6 +8,7 @@ type styles struct {
 	SuccessStyle lipgloss.Style
 	ErrorStyle   lipgloss.Style
 	BorderStyle  lipgloss.Style
+	DebugStyle   lipgloss.Style
 }
 
 var TerminalStyles = styles{
@@ -16,4 +17,5 @@ var TerminalStyles = styles{
 	SuccessStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#33ff33")),
 	ErrorStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("#ff3333")),
 	BorderStyle:  lipgloss.NewStyle().Foreground(lipgloss.Color("#444444")),
+	DebugStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("#ffd700")),
 }

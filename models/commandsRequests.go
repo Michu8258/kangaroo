@@ -6,7 +6,7 @@ type SudokuConfigRequest struct {
 	LayoutHeight *int8
 }
 
-func (r *SudokuConfigRequest) GetConfigRequest() *SudokuConfigRequest {
+func (r *SudokuConfigRequest) AsConfigRequest() *SudokuConfigRequest {
 	return r
 }
 

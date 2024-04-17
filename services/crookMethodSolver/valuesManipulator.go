@@ -3,19 +3,22 @@ package crookMethodSolver
 import (
 	"fmt"
 
+	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // assignCertainValues assigns certain values as final cell value (certain
 // values is when there is only one potential value in slice of potential
 // values in given cell). Returns true if at least one such case was found,
 // otherwise returns false.
-func assignCertainValues(sudoku *models.Sudoku, settings *models.Settings) bool {
+func assignCertainValues(sudoku *models.Sudoku, settings *models.Settings,
+	debugPrinter printer.Printer) bool {
+
 	valuesAssigned := 0
 
-	if settings.UseDebugPrints {
-		fmt.Println("Starting certain values assignment - based of potential values")
-	}
+	debugPrinter.PrintDefault("Starting certain values assignment - based of potential values.")
+	debugPrinter.PrintNewLine()
 
 	for _, subSudoku := range sudoku.SubSudokus {
 		for _, subSudokuBox := range subSudoku.Boxes {
@@ -26,13 +29,11 @@ func assignCertainValues(sudoku *models.Sudoku, settings *models.Settings) bool 
 					subSudokuBoxCell.PotentialValues = nil
 					valuesAssigned += 1
 
-					if settings.UseDebugPrints {
-						fmt.Printf("Assigned certain cell value: %v. Box absolute indexes(row: %d, column: %d), "+
-							"cell indexes(row: %d, column: %d).\n",
-							*subSudokuBoxCell.Value,
-							subSudokuBoxCell.Box.IndexRow, subSudokuBoxCell.Box.IndexColumn,
-							subSudokuBoxCell.IndexRowInBox, subSudokuBoxCell.IndexColumnInBox)
-					}
+					debugPrinter.PrintDefault(fmt.Sprintf(
+						"Assigned certain cell value: %v. Cell %s.",
+						*subSudokuBoxCell.Value,
+						helpers.GetCellCoordinatesString(sudoku, subSudokuBoxCell.Box, subSudokuBoxCell, true)))
+					debugPrinter.PrintNewLine()
 				}
 			}
 		}
@@ -40,9 +41,13 @@ func assignCertainValues(sudoku *models.Sudoku, settings *models.Settings) bool 
 
 	if settings.UseDebugPrints {
 		if valuesAssigned >= 1 {
-			fmt.Println("Certain values assignment finished - assigned values count: ", valuesAssigned)
+			debugPrinter.PrintDefault(fmt.Sprintf(
+				"Certain values assignment finished - assigned values count: %v",
+				valuesAssigned))
+			debugPrinter.PrintNewLine()
 		} else {
-			fmt.Println("Certain values assignment finished - no value assigned")
+			debugPrinter.PrintDefault("Certain values assignment finished - no value assigned")
+			debugPrinter.PrintNewLine()
 		}
 	}
 
@@ -51,7 +56,7 @@ func assignCertainValues(sudoku *models.Sudoku, settings *models.Settings) bool 
 
 // checkIfAllCellsHaveValues checks if all sudokou cells has values
 // and return true if that is the case
-func checkIfAllCellsHaveValues(sudoku *models.Sudoku, settings *models.Settings) bool {
+func checkIfAllCellsHaveValues(sudoku *models.Sudoku, debugPrinter printer.Printer) bool {
 	for _, subSudoku := range sudoku.SubSudokus {
 		for _, subSudokuBox := range subSudoku.Boxes {
 			for _, subSudokuBoxCell := range subSudokuBox.Cells {
@@ -62,9 +67,8 @@ func checkIfAllCellsHaveValues(sudoku *models.Sudoku, settings *models.Settings)
 		}
 	}
 
-	if settings.UseDebugPrints {
-		fmt.Println("It appears that the Sudoku has all cells filled with values.")
-	}
+	debugPrinter.PrintDefault("It appears that the Sudoku has all cells filled with values.")
+	debugPrinter.PrintNewLine()
 
 	return true
 }

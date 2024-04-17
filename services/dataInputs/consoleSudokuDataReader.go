@@ -2,17 +2,19 @@ package dataInputs
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/prompts"
+	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // ReadFromConsole reads raw sudoku data based on user console inputs.
 // Initial request config is respected and some questions are skipped
 // if provided object has correct values (in range) assigned. Returns
 // sudoku DTO and error if occures.
-func ReadFromConsole(request *models.SudokuConfigRequest, settings *models.Settings) (*models.SudokuDTO, error) {
+func ReadFromConsole(request *models.SudokuConfigRequest, settings *models.Settings,
+	terminalPrinter printer.Printer, debugPrinter printer.Printer) (*models.SudokuDTO, error) {
+
 	readError := errors.New("failed to read sudoku user data inputs")
 
 	boxSize, err := prompts.PromptGetBoxSize(request.BoxSize, settings)
@@ -35,11 +37,10 @@ func ReadFromConsole(request *models.SudokuConfigRequest, settings *models.Setti
 	request.LayoutHeight = &layoutHeight
 
 	sudokuDto := buildEmptySudokuDTO(request)
-	err = prompts.PromptSudokuValues(sudokuDto, settings)
+	err = prompts.PromptSudokuValues(sudokuDto, settings, terminalPrinter)
 	if err != nil {
-		if settings.UseDebugPrints {
-			fmt.Println(err)
-		}
+		debugPrinter.PrintError(err.Error())
+		debugPrinter.PrintNewLine()
 		return nil, readError
 	}
 

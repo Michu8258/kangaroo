@@ -4,11 +4,14 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // printPotentialValues prints debug information to the console when called
-func printPotentialValues(sudoku *models.Sudoku, title string) {
-	fmt.Printf("==================== POTENTIAL VALUES | %s | ====================\n", title)
+func printPotentialValues(sudoku *models.Sudoku, title string, debugPrinter printer.Printer) {
+	debugPrinter.PrintDefault(
+		fmt.Sprintf("==================== POTENTIAL VALUES | %s | ====================", title))
+	debugPrinter.PrintNewLine()
 
 	cellValuePrinter := func(v *int) string {
 		if v == nil {
@@ -48,21 +51,22 @@ func printPotentialValues(sudoku *models.Sudoku, title string) {
 						potentialValuesPrinter(sudokuCell.PotentialValues))
 
 					if cellColumnIndex >= sudoku.BoxSize-1 {
-						fmt.Printf("%-25s", representation)
+						debugPrinter.PrintDefault(fmt.Sprintf("%-25s", representation))
 					} else {
-						fmt.Printf("%-20s", representation)
+						debugPrinter.PrintDefault(fmt.Sprintf("%-20s", representation))
 					}
 				}
 			}
 
-			fmt.Println()
+			debugPrinter.PrintNewLine()
 		}
 
 		if boxRowIndex < sudoku.Layout.Height-1 {
-			fmt.Println()
-			// fmt.Println()
+			debugPrinter.PrintNewLine()
 		}
 	}
 
-	fmt.Printf("================== POTENTIAL VALUES END | %s | ====================\n", title)
+	debugPrinter.PrintDefault(
+		fmt.Sprintf("================== POTENTIAL VALUES END | %s | ====================", title))
+	debugPrinter.PrintNewLine()
 }
