@@ -8,7 +8,7 @@ import (
 )
 
 // TODO - test algorithm against unsolvable sudoku,
-// TODO - add saving result to file - one flag, not two - like in create command
+// TODO - add tests with script
 
 // SolveCommand provides solve sudoku command configuration
 func (commandConfig *CommandConfig) SolveCommand() *cli.Command {
@@ -67,6 +67,14 @@ func (commandConfig *CommandConfig) solveCommandHandler(request *models.SolveCom
 	}
 
 	commandConfig.printSudoku("Sudoku puzzle solution:", sudoku)
+
+	if request.OutputFile != nil {
+		validPaths := commandConfig.validateDestinationFilePaths(*request.OutputFile)
+		if len(validPaths) >= 1 {
+			commandConfig.TerminalPrinter.PrintNewLine()
+			commandConfig.executeSudokuFilesSave(sudoku, request.AsConfigRequest(), validPaths)
+		}
+	}
 
 	return nil
 }

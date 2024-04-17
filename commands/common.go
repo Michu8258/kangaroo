@@ -2,9 +2,89 @@ package commands
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/Michu8258/kangaroo/models"
 )
+
+// validateDestinationFilePaths checks if all provided file names have no extension
+// or have json or txt extension. Returns slice of valid names
+func (commandConfig *CommandConfig) validateDestinationFilePaths(
+	destinationFilePaths ...string) []string {
+
+	validPaths := []string{}
+	errorPaths := []error{}
+
+	for _, destinationPath := range destinationFilePaths {
+		extension := filepath.Ext(destinationPath)
+		if len(extension) < 1 {
+			validPaths = append(validPaths, destinationPath+".json")
+			continue
+		}
+
+		if extension == ".json" || extension == ".txt" {
+			validPaths = append(validPaths, destinationPath)
+			continue
+		}
+
+		errorPaths = append(errorPaths, fmt.Errorf("unsupported file extension for path '%s'", destinationPath))
+	}
+
+	if len(errorPaths) > 0 {
+		commandConfig.DataPrinter.PrintErrors(
+			"Optput files listed below are not supported", errorPaths...)
+	}
+
+	if len(validPaths) < 1 {
+		commandConfig.TerminalPrinter.PrintError(
+			"No supported file path to save sudoku data to.")
+		commandConfig.TerminalPrinter.PrintNewLine()
+	}
+
+	return validPaths
+}
+
+// executeSudokuFilesSave executes iterative sudoku files save with
+// results printing uncluded
+func (commandConfig *CommandConfig) executeSudokuFilesSave(sudoku *models.Sudoku,
+	request *models.SudokuConfigRequest, paths []string) {
+	commandConfig.TerminalPrinter.PrintPrimary("Saving results:")
+	commandConfig.TerminalPrinter.PrintNewLine()
+	for _, path := range paths {
+		commandConfig.saveSudokuToFile(sudoku, request.AsConfigRequest(), path)
+	}
+}
+
+// executes save to file logic
+func (commandConfig *CommandConfig) saveSudokuToFile(sudoku *models.Sudoku,
+	request *models.SudokuConfigRequest, path string) {
+
+	extension := filepath.Ext(path)
+
+	var written bool
+	var err error
+
+	if extension == ".txt" {
+		written, err = commandConfig.DataWriter.SaveSudokuToTxt(sudoku, path, request.Overwrite)
+	} else {
+		written, err = commandConfig.DataWriter.SaveSudokuToJson(sudoku, path, request.Overwrite)
+	}
+
+	if err != nil {
+		commandConfig.TerminalPrinter.PrintError(fmt.Sprintf("- %s", err))
+		commandConfig.TerminalPrinter.PrintNewLine()
+		return
+	}
+
+	if written {
+		commandConfig.TerminalPrinter.PrintSuccess(fmt.Sprintf("- '%s' written successfully", path))
+		commandConfig.TerminalPrinter.PrintNewLine()
+		return
+	}
+
+	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- '%s' already exists (ommited)", path))
+	commandConfig.TerminalPrinter.PrintNewLine()
+}
 
 // executeSudokuInitialization executes sudoku initialization (validation included)
 // based of dto input object. If everything is OK, sudoku data will be printer.
