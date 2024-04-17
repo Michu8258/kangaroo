@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Michu8258/kangaroo/types"
+	"github.com/Michu8258/kangaroo/models"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -89,16 +89,16 @@ func (m promptSelect[T]) View() string {
 	}
 
 	s := strings.Builder{}
-	s.WriteString(types.OutputStyles.PrimaryStyle.Render(m.title))
+	s.WriteString(models.TerminalStyles.PrimaryStyle.Render(m.title))
 	s.WriteString("\n")
 
 	for i := 0; i < len(m.choices); i++ {
 		if m.cursor == i {
-			s.WriteString(types.OutputStyles.SuccessStyle.Render("[✓] "))
-			s.WriteString(types.OutputStyles.SuccessStyle.Render(m.choices[i].Label))
+			s.WriteString(models.TerminalStyles.SuccessStyle.Render("[✓] "))
+			s.WriteString(models.TerminalStyles.SuccessStyle.Render(m.choices[i].Label))
 		} else {
-			s.WriteString(types.OutputStyles.DefaultStyle.Render("[ ] "))
-			s.WriteString(types.OutputStyles.DefaultStyle.Render(m.choices[i].Label))
+			s.WriteString(models.TerminalStyles.DefaultStyle.Render("[ ] "))
+			s.WriteString(models.TerminalStyles.DefaultStyle.Render(m.choices[i].Label))
 		}
 		s.WriteString("\n")
 	}

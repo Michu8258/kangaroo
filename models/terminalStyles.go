@@ -1,4 +1,4 @@
-package types
+package models
 
 import "github.com/charmbracelet/lipgloss"
 
@@ -10,7 +10,7 @@ type styles struct {
 	BorderStyle  lipgloss.Style
 }
 
-var OutputStyles = styles{
+var TerminalStyles = styles{
 	DefaultStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#eeeeee")),
 	PrimaryStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#7777ff")).Bold(true),
 	SuccessStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("#33ff33")),

@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/dataPrinters"
 	"github.com/Michu8258/kangaroo/services/initialization"
-	"github.com/Michu8258/kangaroo/services/printers"
-	"github.com/Michu8258/kangaroo/types"
+	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // executeSudokuInitialization executes sudoku initialization (validation included)
@@ -14,13 +14,13 @@ import (
 // Returns mapped sudoku object and boolean flag indicating if everything is
 // correct up to this point
 func executeSudokuInitialization(sudokuDto *models.SudokuDTO, settings *models.Settings,
-	printer types.Printer) (*models.Sudoku, bool) {
+	printer printer.Printer) (*models.Sudoku, bool) {
 
 	sudoku := sudokuDto.ToSudoku()
 	isSudokuPrintable, errs := initialization.InitializeSudoku(sudoku, settings)
 
 	if len(errs) >= 1 {
-		printers.PrintErrors("Invalid sudoku configuration:", printer, errs...)
+		dataPrinters.PrintErrors("Invalid sudoku configuration:", printer, errs...)
 		printer.PrintNewLine()
 		if isSudokuPrintable {
 			printSudoku("Invalid sudoku values", sudoku, settings, printer)
@@ -36,7 +36,7 @@ func executeSudokuInitialization(sudokuDto *models.SudokuDTO, settings *models.S
 }
 
 // printSudokuConfig prints sudoku configuration with provided printer
-func printSudokuConfig(sudoku *models.Sudoku, printer types.Printer) {
+func printSudokuConfig(sudoku *models.Sudoku, printer printer.Printer) {
 	printer.PrintPrimary("Selected sudoku puzzle configuration:")
 	printer.PrintNewLine()
 	printer.PrintDefault(fmt.Sprintf("- sudoku box size %d", sudoku.BoxSize))
@@ -49,8 +49,8 @@ func printSudokuConfig(sudoku *models.Sudoku, printer types.Printer) {
 }
 
 // printSudoku prints sudoku to standard out
-func printSudoku(description string, sudoku *models.Sudoku, settings *models.Settings, printer types.Printer) {
+func printSudoku(description string, sudoku *models.Sudoku, settings *models.Settings, printer printer.Printer) {
 	printer.PrintPrimary(description)
 	printer.PrintNewLine()
-	printers.PrintSudoku(sudoku, settings, printer)
+	dataPrinters.PrintSudoku(sudoku, settings, printer)
 }

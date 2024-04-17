@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/Michu8258/kangaroo/types"
 	guid "github.com/nu7hatch/gouuid"
 )
 
@@ -12,10 +11,10 @@ type SudokuCellDTO struct {
 }
 
 type SudokuBoxDTO struct {
-	Disabled    bool                               `json:"disabled"`
-	IndexRow    int8                               `json:"indexRow"`
-	IndexColumn int8                               `json:"indexColumn"`
-	Cells       types.GenericSlice[*SudokuCellDTO] `json:"cells"`
+	Disabled    bool                         `json:"disabled"`
+	IndexRow    int8                         `json:"indexRow"`
+	IndexColumn int8                         `json:"indexColumn"`
+	Cells       GenericSlice[*SudokuCellDTO] `json:"cells"`
 }
 
 type SudokuLayoutDTO struct {
@@ -24,9 +23,9 @@ type SudokuLayoutDTO struct {
 }
 
 type SudokuDTO struct {
-	BoxSize int8                              `json:"boxSize"`
-	Layout  SudokuLayoutDTO                   `json:"layout"`
-	Boxes   types.GenericSlice[*SudokuBoxDTO] `json:"boxes"`
+	BoxSize int8                        `json:"boxSize"`
+	Layout  SudokuLayoutDTO             `json:"layout"`
+	Boxes   GenericSlice[*SudokuBoxDTO] `json:"boxes"`
 }
 
 // ToSudoku converts raw sudoku DTO object to internally managed object
@@ -38,7 +37,7 @@ func (sudokuDto *SudokuDTO) ToSudoku() *Sudoku {
 			Height: sudokuDto.Layout.Height,
 			Width:  sudokuDto.Layout.Width,
 		},
-		Boxes:      types.GenericSlice[*SudokuBox]{},
+		Boxes:      GenericSlice[*SudokuBox]{},
 		SubSudokus: []*SubSudoku{},
 		Result:     Unspecified,
 	}
@@ -50,7 +49,7 @@ func (sudokuDto *SudokuDTO) ToSudoku() *Sudoku {
 			Disabled:     sudokuBoxDto.Disabled,
 			IndexRow:     sudokuBoxDto.IndexRow,
 			IndexColumn:  sudokuBoxDto.IndexColumn,
-			Cells:        types.GenericSlice[*SudokuCell]{},
+			Cells:        GenericSlice[*SudokuCell]{},
 			ViolatesRule: false,
 		}
 
@@ -64,7 +63,7 @@ func (sudokuDto *SudokuDTO) ToSudoku() *Sudoku {
 				IndexRowInBox:    sudokuCellDto.IndexRowInBox,
 				IndexColumnInBox: sudokuCellDto.IndexColumnInBox,
 				Box:              nil,
-				MemberOfLines:    types.GenericSlice[*SudokuLine]{},
+				MemberOfLines:    GenericSlice[*SudokuLine]{},
 			})
 		}
 

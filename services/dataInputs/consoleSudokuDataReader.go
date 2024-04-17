@@ -6,7 +6,6 @@ import (
 
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/prompts"
-	"github.com/Michu8258/kangaroo/types"
 )
 
 // ReadFromConsole reads raw sudoku data based on user console inputs.
@@ -55,7 +54,7 @@ func buildEmptySudokuDTO(request *models.SudokuConfigRequest) *models.SudokuDTO 
 			Width:  *request.LayoutWidth,
 			Height: *request.LayoutHeight,
 		},
-		Boxes: types.GenericSlice[*models.SudokuBoxDTO]{},
+		Boxes: models.GenericSlice[*models.SudokuBoxDTO]{},
 	}
 
 	var bowRowIndex int8 = 0
@@ -67,7 +66,7 @@ func buildEmptySudokuDTO(request *models.SudokuConfigRequest) *models.SudokuDTO 
 				Disabled:    false,
 				IndexRow:    bowRowIndex,
 				IndexColumn: boxColumnIndex,
-				Cells:       types.GenericSlice[*models.SudokuCellDTO]{},
+				Cells:       models.GenericSlice[*models.SudokuCellDTO]{},
 			}
 
 			var cellRowIndex int8 = 0

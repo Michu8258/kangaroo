@@ -6,7 +6,6 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 )
 
 // validateSudokuRules validates sudoku cells values against sudoku rules.
@@ -51,7 +50,7 @@ func validateSudokuRules(sudoku *models.Sudoku) (bool, error) {
 }
 
 // checkRuleViolation returns true if the rule is violated (broken)
-func checkRuleViolation(sudoku *models.Sudoku, cells types.GenericSlice[*models.SudokuCell]) bool {
+func checkRuleViolation(sudoku *models.Sudoku, cells models.GenericSlice[*models.SudokuCell]) bool {
 	minValue := 1
 	maxValue := int(sudoku.BoxSize * sudoku.BoxSize)
 

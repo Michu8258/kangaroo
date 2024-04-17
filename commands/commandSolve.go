@@ -5,12 +5,13 @@ import (
 	"github.com/Michu8258/kangaroo/models"
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
 	"github.com/Michu8258/kangaroo/services/dataInputs"
-	"github.com/Michu8258/kangaroo/services/printers"
-	"github.com/Michu8258/kangaroo/types"
+	"github.com/Michu8258/kangaroo/services/dataPrinters"
+	"github.com/Michu8258/kangaroo/services/printer"
 	"github.com/urfave/cli/v2"
 )
 
 // TODO - test algorithm against unsolvable sudoku,
+// TODO - add saving result to file - one flag, not two - like in create command
 
 // SolveCommand provides solve sudoku command configuration
 func SolveCommand(settings *models.Settings) *cli.Command {
@@ -49,10 +50,10 @@ func SolveCommand(settings *models.Settings) *cli.Command {
 
 // solveCommandHandler is an entry point function for solve sudoku command
 func solveCommandHandler(request *models.SolveCommandRequest, settings *models.Settings) error {
-	consolePrinter := types.NewConsolePrinter(settings.SilentConsolePrints)
+	consolePrinter := printer.NewTerminalPrinter(settings.SilentConsolePrints)
 	rawSudoku, err := getSudokuInputRawData(request, settings)
 	if err != nil {
-		printers.PrintErrors("Invalid sudoku input", consolePrinter, err)
+		dataPrinters.PrintErrors("Invalid sudoku input", consolePrinter, err)
 		return nil
 	}
 
@@ -69,7 +70,7 @@ func solveCommandHandler(request *models.SolveCommandRequest, settings *models.S
 	}
 
 	if settings.UseDebugPrints && len(errs) >= 1 {
-		printers.PrintErrors("Sudoku solution failure reasons:", consolePrinter, err)
+		dataPrinters.PrintErrors("Sudoku solution failure reasons:", consolePrinter, err)
 		return nil
 	}
 

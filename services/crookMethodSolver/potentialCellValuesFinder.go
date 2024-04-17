@@ -6,7 +6,6 @@ import (
 	"slices"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 )
 
 // assignCellsPotentialValues assigns potential sudoku cell values.
@@ -82,7 +81,7 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 // is performed if the same cell will be iterated for the second and nth time. Returns
 // boolean flag indicating if the given cell has empty potential values slice, and
 // error if any occured during processing
-func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection types.GenericSlice[*models.SudokuCell],
+func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection models.GenericSlice[*models.SudokuCell],
 	settings *models.Settings, minimumCellValue int, maximumCellValue int) (emptyPotentialValues bool, errorResult error) {
 	// in cas something went wrong
 	defer func() {
@@ -95,12 +94,12 @@ func findPotentialValuesForCell(cell *models.SudokuCell, cellsCollection types.G
 		return c.Id != cell.Id && c.Value != nil
 	})
 
-	takenValues := make(types.GenericSlice[int], 0, len(siblingCellsWithValues))
+	takenValues := make(models.GenericSlice[int], 0, len(siblingCellsWithValues))
 	for _, siblingCell := range siblingCellsWithValues {
 		takenValues = append(takenValues, *siblingCell.Value)
 	}
 
-	potentialValues := make(types.GenericSlice[int], 0, maximumCellValue+1-minimumCellValue-len(takenValues))
+	potentialValues := make(models.GenericSlice[int], 0, maximumCellValue+1-minimumCellValue-len(takenValues))
 	for i := minimumCellValue; i <= maximumCellValue; i++ {
 		if !slices.Contains(takenValues, i) {
 			potentialValues = append(potentialValues, i)

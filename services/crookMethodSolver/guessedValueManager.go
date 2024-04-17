@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 	guid "github.com/nu7hatch/gouuid"
 )
 
@@ -29,7 +28,7 @@ func restoreSnapshotFromGuessedValue(sudoku *models.Sudoku, cellValueGuess *mode
 				continue
 			}
 
-			potentialValues := types.GenericSlice[int]{}
+			potentialValues := models.GenericSlice[int]{}
 			for _, pv := range *snapshottedPotentialValues {
 				potentialValues = append(potentialValues, pv)
 			}

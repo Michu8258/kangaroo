@@ -6,7 +6,6 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 )
 
 type cellSearchParams struct {
@@ -88,7 +87,7 @@ func iterateRowsColumnsLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku,
 	var firstDimensionIndex int8 = 0
 	for firstDimensionIndex = 0; firstDimensionIndex < cellsInLineCount; firstDimensionIndex++ {
 		sudokuLine := &models.SudokuLine{
-			Cells:        types.GenericSlice[*models.SudokuCell]{},
+			Cells:        models.GenericSlice[*models.SudokuCell]{},
 			LineType:     lineType,
 			ViolatesRule: false,
 			SubsudokuId:  subSudoku.Id,

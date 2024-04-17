@@ -8,8 +8,8 @@ import (
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/services/dataInputs"
 	"github.com/Michu8258/kangaroo/services/dataOutputs"
-	"github.com/Michu8258/kangaroo/services/printers"
-	"github.com/Michu8258/kangaroo/types"
+	"github.com/Michu8258/kangaroo/services/dataPrinters"
+	"github.com/Michu8258/kangaroo/services/printer"
 	"github.com/urfave/cli/v2"
 )
 
@@ -42,7 +42,7 @@ func CreateCommand(settings *models.Settings) *cli.Command {
 // createCommandHandler is an entry point function to create sudoku data file
 func createCommandHandler(request *models.CreateCommandRequest, settings *models.Settings,
 	destinationFilePaths []string) error {
-	consolePrinter := types.NewConsolePrinter(settings.SilentConsolePrints)
+	consolePrinter := printer.NewTerminalPrinter(settings.SilentConsolePrints)
 
 	if len(destinationFilePaths) < 1 {
 		consolePrinter.PrintError("Please provide at least one argument for output file location.")
@@ -52,7 +52,7 @@ func createCommandHandler(request *models.CreateCommandRequest, settings *models
 
 	validPaths, errorPaths := validateDestinationFilePaths(destinationFilePaths)
 	if len(errorPaths) > 0 {
-		printers.PrintErrors("Optput files listed below are not supported", consolePrinter, errorPaths...)
+		dataPrinters.PrintErrors("Optput files listed below are not supported", consolePrinter, errorPaths...)
 	}
 
 	if len(validPaths) < 1 {
@@ -63,7 +63,7 @@ func createCommandHandler(request *models.CreateCommandRequest, settings *models
 
 	sudokuDto, err := dataInputs.ReadFromConsole(request.GetConfigRequest(), settings)
 	if err != nil {
-		printers.PrintErrors("Invalid sudoku input", consolePrinter, err)
+		dataPrinters.PrintErrors("Invalid sudoku input", consolePrinter, err)
 		return nil
 	}
 
@@ -83,7 +83,7 @@ func createCommandHandler(request *models.CreateCommandRequest, settings *models
 
 // executes save to file logic
 func saveToFile(sudoku *models.Sudoku, request *models.CreateCommandRequest,
-	path string, printer types.Printer, settings *models.Settings) {
+	path string, printer printer.Printer, settings *models.Settings) {
 
 	extension := filepath.Ext(path)
 

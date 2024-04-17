@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/Michu8258/kangaroo/types"
 	guid "github.com/nu7hatch/gouuid"
 )
 
@@ -12,11 +11,11 @@ type SudokuCell struct {
 	Id               guid.UUID
 	Value            *int
 	IsInputValue     bool
-	PotentialValues  *types.GenericSlice[int]
+	PotentialValues  *GenericSlice[int]
 	IndexRowInBox    int8
 	IndexColumnInBox int8
 	Box              *SudokuBox
-	MemberOfLines    types.GenericSlice[*SudokuLine]
+	MemberOfLines    GenericSlice[*SudokuLine]
 }
 
 func (cell *SudokuCell) HasViolationError() bool {
@@ -34,7 +33,7 @@ func (cell *SudokuCell) HasViolationError() bool {
 }
 
 type SudokuLine struct {
-	Cells        types.GenericSlice[*SudokuCell]
+	Cells        GenericSlice[*SudokuCell]
 	LineType     string
 	ViolatesRule bool
 	SubsudokuId  guid.UUID
@@ -45,16 +44,16 @@ type SudokuBox struct {
 	Disabled     bool
 	IndexRow     int8
 	IndexColumn  int8
-	Cells        types.GenericSlice[*SudokuCell]
+	Cells        GenericSlice[*SudokuCell]
 	ViolatesRule bool
 }
 
 type SubSudoku struct {
 	Id                    guid.UUID
-	Boxes                 types.GenericSlice[*SudokuBox]
+	Boxes                 GenericSlice[*SudokuBox]
 	TopLeftBoxRowIndex    int8
 	TopLeftBoxColumnIndex int8
-	ChildLines            types.GenericSlice[*SudokuLine]
+	ChildLines            GenericSlice[*SudokuLine]
 }
 
 type SudokuLayout struct {
@@ -65,8 +64,8 @@ type SudokuLayout struct {
 type Sudoku struct {
 	BoxSize    int8
 	Layout     SudokuLayout
-	Boxes      types.GenericSlice[*SudokuBox]
-	SubSudokus types.GenericSlice[*SubSudoku]
+	Boxes      GenericSlice[*SudokuBox]
+	SubSudokus GenericSlice[*SubSudoku]
 	Result     SudokuResultType
 }
 
@@ -96,7 +95,7 @@ func (sudoku *Sudoku) ToSudokuDto() *SudokuDTO {
 			Height: sudoku.Layout.Height,
 			Width:  sudoku.Layout.Width,
 		},
-		Boxes: types.GenericSlice[*SudokuBoxDTO]{},
+		Boxes: GenericSlice[*SudokuBoxDTO]{},
 	}
 
 	for _, sudokuBox := range sudoku.Boxes {
@@ -104,7 +103,7 @@ func (sudoku *Sudoku) ToSudokuDto() *SudokuDTO {
 			Disabled:    sudokuBox.Disabled,
 			IndexRow:    sudokuBox.IndexRow,
 			IndexColumn: sudokuBox.IndexColumn,
-			Cells:       types.GenericSlice[*SudokuCellDTO]{},
+			Cells:       GenericSlice[*SudokuCellDTO]{},
 		}
 
 		for _, sudokuCell := range sudokuBox.Cells {

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -193,34 +192,34 @@ func printSudokuHorizontalBoxLine(builder *strings.Builder, model *sudokuValuesP
 	paddingLength := int(model.settings.SudokuPrintoutValuePaddingLength)
 	charsPerCell := model.charactersPerCell + 2*paddingLength
 
-	builder.WriteString(types.OutputStyles.BorderStyle.Render(startSign))
+	builder.WriteString(models.TerminalStyles.BorderStyle.Render(startSign))
 
 	var boxColumnIndex int8 = 0
 	var cellColumnIndex int8 = 0
 	for boxColumnIndex = 0; boxColumnIndex < model.sudokuDTO.Layout.Width; boxColumnIndex++ {
 		for cellColumnIndex = 0; cellColumnIndex < model.sudokuDTO.BoxSize; cellColumnIndex++ {
 			if cellColumnIndex > 0 {
-				builder.WriteString(types.OutputStyles.BorderStyle.Render(middleSign))
+				builder.WriteString(models.TerminalStyles.BorderStyle.Render(middleSign))
 			}
 			for characterIndex := 0; characterIndex < charsPerCell; characterIndex++ {
-				builder.WriteString(types.OutputStyles.BorderStyle.Render(middleSign))
+				builder.WriteString(models.TerminalStyles.BorderStyle.Render(middleSign))
 			}
 		}
 
 		if boxColumnIndex < model.sudokuDTO.Layout.Width-1 {
-			builder.WriteString(types.OutputStyles.BorderStyle.Render(columnCrossSign))
+			builder.WriteString(models.TerminalStyles.BorderStyle.Render(columnCrossSign))
 		}
 	}
 
-	builder.WriteString(types.OutputStyles.BorderStyle.Render(endSign))
-	builder.WriteString(types.OutputStyles.BorderStyle.Render("\n"))
+	builder.WriteString(models.TerminalStyles.BorderStyle.Render(endSign))
+	builder.WriteString(models.TerminalStyles.BorderStyle.Render("\n"))
 }
 
 // printSudokuValuesLine prints single row of sudoku values
 func printSudokuValuesLine(builder *strings.Builder, model *sudokuValuesPrompt,
 	boxRowIndex int8, cellRowIndex int8) {
 
-	builder.WriteString(types.OutputStyles.BorderStyle.Render("║"))
+	builder.WriteString(models.TerminalStyles.BorderStyle.Render("║"))
 
 	var boxColumnIndex int8 = 0
 	var cellColumnIndex int8 = 0
@@ -232,7 +231,7 @@ func printSudokuValuesLine(builder *strings.Builder, model *sudokuValuesPrompt,
 
 		for cellColumnIndex = 0; cellColumnIndex < model.sudokuDTO.BoxSize; cellColumnIndex++ {
 			if cellColumnIndex > 0 {
-				builder.WriteString(types.OutputStyles.BorderStyle.Render("│"))
+				builder.WriteString(models.TerminalStyles.BorderStyle.Render("│"))
 			}
 
 			sudokuCell := sudokuBox.Cells.FirstOrDefault(nil, func(cell *models.SudokuCellDTO) bool {
@@ -243,11 +242,11 @@ func printSudokuValuesLine(builder *strings.Builder, model *sudokuValuesPrompt,
 		}
 
 		if boxColumnIndex < model.sudokuDTO.Layout.Width-1 {
-			builder.WriteString(types.OutputStyles.BorderStyle.Render("║"))
+			builder.WriteString(models.TerminalStyles.BorderStyle.Render("║"))
 		}
 	}
 
-	builder.WriteString(types.OutputStyles.BorderStyle.Render("║"))
+	builder.WriteString(models.TerminalStyles.BorderStyle.Render("║"))
 	builder.WriteString("\n")
 }
 
@@ -265,13 +264,13 @@ func printSudokuCell(builder *strings.Builder, model *sudokuValuesPrompt,
 		model.currentCell.IndexColumnInBox == cell.IndexColumnInBox
 
 	if isActiveCell {
-		style = types.OutputStyles.SuccessStyle
+		style = models.TerminalStyles.SuccessStyle
 	} else if box.Disabled {
-		style = types.OutputStyles.BorderStyle
+		style = models.TerminalStyles.BorderStyle
 	} else if cell.Value == nil {
-		style = types.OutputStyles.BorderStyle
+		style = models.TerminalStyles.BorderStyle
 	} else {
-		style = types.OutputStyles.PrimaryStyle
+		style = models.TerminalStyles.PrimaryStyle
 	}
 
 	printValuePadding(builder, model, style)
@@ -311,33 +310,33 @@ func printValuePadding(builder *strings.Builder, model *sudokuValuesPrompt, styl
 
 // printSudokuControls print controls of sudoku editor
 func printSudokuControls(builder *strings.Builder) {
-	builder.WriteString(types.OutputStyles.PrimaryStyle.Render("Controls:"))
+	builder.WriteString(models.TerminalStyles.PrimaryStyle.Render("Controls:"))
 	builder.WriteString("\n")
 
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("Move up: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("↑/k"))
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("\tMove down: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("↓/j"))
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("\tMove left: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("←/h"))
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("\tMove right: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("→/l"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("Move up: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("↑/k"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("\tMove down: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("↓/j"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("\tMove left: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("←/h"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("\tMove right: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("→/l"))
 	builder.WriteString("\n")
 
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("InsertValue: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("numbers 0-9"))
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("\tDelete value: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("delete"))
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("\tBackspace: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("backspace"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("InsertValue: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("numbers 0-9"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("\tDelete value: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("delete"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("\tBackspace: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("backspace"))
 	builder.WriteString("\n")
 
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("Finish and confirm: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("enter"))
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("\tCancel: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("esc/ctrl+c"))
-	builder.WriteString(types.OutputStyles.DefaultStyle.Render("\tEnable/disable box: "))
-	builder.WriteString(types.OutputStyles.SuccessStyle.Render("e/d"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("Finish and confirm: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("enter"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("\tCancel: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("esc/ctrl+c"))
+	builder.WriteString(models.TerminalStyles.DefaultStyle.Render("\tEnable/disable box: "))
+	builder.WriteString(models.TerminalStyles.SuccessStyle.Render("e/d"))
 	builder.WriteString("\n")
 }
 

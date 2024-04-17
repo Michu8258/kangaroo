@@ -7,8 +7,8 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/printers"
-	"github.com/Michu8258/kangaroo/types"
+	"github.com/Michu8258/kangaroo/services/dataPrinters"
+	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // SaveSudokuToJson executes sudoku object JSON dump to selected file.
@@ -56,8 +56,8 @@ func SaveSudokuToTxt(sudoku *models.Sudoku, settings *models.Settings, path stri
 
 	defer file.Close()
 
-	txtFilePrinter := types.NewTxtFilePrinter(file)
-	printers.PrintSudoku(sudoku, settings, txtFilePrinter)
+	txtFilePrinter := printer.NewTxtFilePrinter(file)
+	dataPrinters.PrintSudoku(sudoku, settings, txtFilePrinter)
 	file.Sync()
 
 	return true, nil

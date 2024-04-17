@@ -6,7 +6,6 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 )
 
 // validateSudokuValues checks if all sub sudokus boxes, rows and columns
@@ -46,7 +45,7 @@ func validateSudokuValues(sudoku *models.Sudoku) []error {
 
 // validateCellsCollection check if every cell with value has a value within an expected range,
 // and if the value is not duplicated within cells collection (box, row, columns).
-func validateCellsCollection(sudoku *models.Sudoku, boxSize int8, cells types.GenericSlice[*models.SudokuCell],
+func validateCellsCollection(sudoku *models.Sudoku, boxSize int8, cells models.GenericSlice[*models.SudokuCell],
 	collectionType string, cellsErrorSetter func()) []error {
 
 	errs := []error{}

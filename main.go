@@ -10,6 +10,8 @@ import (
 )
 
 // TODO presets commands family
+// TODO update documentation markdown file
+// TODO dependency inversion - services, inject printer type
 
 func main() {
 	settings := createSettings()

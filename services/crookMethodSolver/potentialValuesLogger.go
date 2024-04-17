@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 )
 
 // printPotentialValues prints debug information to the console when called
@@ -19,7 +18,7 @@ func printPotentialValues(sudoku *models.Sudoku, title string) {
 		return fmt.Sprintf("%v", *v)
 	}
 
-	potentialValuesPrinter := func(potentialValues *types.GenericSlice[int]) string {
+	potentialValuesPrinter := func(potentialValues *models.GenericSlice[int]) string {
 		if potentialValues == nil {
 			return "-"
 		}

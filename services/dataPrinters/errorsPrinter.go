@@ -1,16 +1,16 @@
-package printers
+package dataPrinters
 
 import (
 	"strings"
 
-	"github.com/Michu8258/kangaroo/types"
+	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // TODO - replace raw fmt prints with printer usage - add special log method
 // TODO - inject printer into commands (solve, create)
 
 // PrintErrors prints errors list
-func PrintErrors(errorsHeader string, printer types.Printer, errors ...error) {
+func PrintErrors(errorsHeader string, printer printer.Printer, errors ...error) {
 	printer.PrintError(errorsHeader)
 	printer.PrintNewLine()
 

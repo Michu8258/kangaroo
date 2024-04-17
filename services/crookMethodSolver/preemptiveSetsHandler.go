@@ -5,13 +5,12 @@ import (
 	"slices"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/types"
 	guid "github.com/nu7hatch/gouuid"
 )
 
 type preemptiveSet struct {
-	CellsInSet           types.GenericSlice[*models.SudokuCell]
-	WholeCollectionCells types.GenericSlice[*models.SudokuCell]
+	CellsInSet           models.GenericSlice[*models.SudokuCell]
+	WholeCollectionCells models.GenericSlice[*models.SudokuCell]
 	Values               []int
 }
 
@@ -131,10 +130,10 @@ func iterateBoxLines(sudoku *models.Sudoku, subSudoku *models.SubSudoku, subSudo
 
 // findShortestPreemptiveSet finds the preemptive set in the cells colection - the
 // shortest one. Returns preemptiveSet data if set was founc.
-func findShortestPreemptiveSet(cellsGroup types.GenericSlice[*models.SudokuCell], settings *models.Settings,
+func findShortestPreemptiveSet(cellsGroup models.GenericSlice[*models.SudokuCell], settings *models.Settings,
 	collectionType string) *preemptiveSet {
 
-	preemptiveSetCells := types.GenericSlice[*models.SudokuCell]{}
+	preemptiveSetCells := models.GenericSlice[*models.SudokuCell]{}
 	for _, currentCell := range cellsGroup {
 		if currentCell.PotentialValues == nil {
 			continue
