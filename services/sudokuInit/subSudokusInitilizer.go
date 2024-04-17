@@ -1,4 +1,4 @@
-package initialization
+package sudokuInit
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 // InitializeSubSudokus sets sub-sudokus data in the main sudoku
 // data structure - it finds all existing and settings-matching
 // sub-sudocus.
-func initializeSubSudokus(sudoku *models.Sudoku) []error {
+func (init *SudokuInit) initializeSubSudokus(sudoku *models.Sudoku) []error {
 	errs := []error{}
 
 	// This is amount of boxes that need to appear next to each other
@@ -43,7 +43,7 @@ func initializeSubSudokus(sudoku *models.Sudoku) []error {
 
 	for minimumRowIndex = 0; minimumRowIndex <= maximumRowIndex; minimumRowIndex++ {
 		for minimumColumnIndex = 0; minimumColumnIndex <= maximumColumnIndex; minimumColumnIndex++ {
-			err := addSubSudoku(sudoku, minimumRowIndex, minimumColumnIndex)
+			err := init.addSubSudoku(sudoku, minimumRowIndex, minimumColumnIndex)
 			if err != nil {
 				errs = append(errs, err)
 			}
@@ -54,7 +54,7 @@ func initializeSubSudokus(sudoku *models.Sudoku) []error {
 		return errs
 	}
 
-	err := validateBoxesAssignments(sudoku)
+	err := init.validateBoxesAssignments(sudoku)
 	if err != nil {
 		errs = append(errs, err)
 	}
@@ -63,7 +63,7 @@ func initializeSubSudokus(sudoku *models.Sudoku) []error {
 }
 
 // addSubSudoku creates a sub0sudoku object and adds it to sudoku object
-func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) error {
+func (init *SudokuInit) addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) error {
 	topLeftSubSudokuBox := sudoku.Boxes.FirstOrDefault(nil, func(box *models.SudokuBox) bool {
 		return box.IndexRow == startRowIndex && box.IndexColumn == startColumnIndex
 	})
@@ -124,7 +124,7 @@ func addSubSudoku(sudoku *models.Sudoku, startRowIndex, startColumnIndex int8) e
 // validateBoxesAssignments check if every box in the sudooku is a part of at least one
 // subsudoku. If there would be a box that is not a part of any sudoku, it means that
 // the sudoku layout is invalid.
-func validateBoxesAssignments(sudoku *models.Sudoku) error {
+func (init *SudokuInit) validateBoxesAssignments(sudoku *models.Sudoku) error {
 	// every not disabled box must appear in at least one sub-sudoku
 	notDisabledBoxes := sudoku.Boxes.Where(func(box *models.SudokuBox) bool {
 		return !box.Disabled

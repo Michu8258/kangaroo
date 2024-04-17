@@ -4,17 +4,14 @@ import (
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
-	"github.com/Michu8258/kangaroo/services/dataInputs"
-	"github.com/Michu8258/kangaroo/services/dataPrinters"
 	"github.com/urfave/cli/v2"
 )
 
 // TODO - test algorithm against unsolvable sudoku,
 // TODO - add saving result to file - one flag, not two - like in create command
-// TODO - unify flags and commands descriptions
 
 // SolveCommand provides solve sudoku command configuration
-func SolveCommand(commandConfig *CommandConfig) *cli.Command {
+func (commandConfig *CommandConfig) SolveCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "solve",
 		Aliases: []string{"s"},
@@ -23,98 +20,80 @@ func SolveCommand(commandConfig *CommandConfig) *cli.Command {
 			&boxSizeFlag,
 			&layoutWidthFlag,
 			&layoutHeightFlag,
-			&cli.StringFlag{Name: "input-file-json",
+			&overwriteFileFlag,
+			&cli.StringFlag{Name: "input-file",
 				Aliases:     []string{"i"},
 				DefaultText: "",
-				Usage:       "Specify relative path to sudoku JSON configuration file",
+				Usage:       "Specify path to sudoku JSON configuration file",
 			},
 			&cli.StringFlag{
-				Name:        "output-file-json",
-				Aliases:     []string{"oj"},
+				Name:        "output-file",
+				Aliases:     []string{"o"},
 				DefaultText: "",
-				Usage:       "Specify relative path to JSON file where you want to save solution of the sudoku",
-			},
-			&cli.StringFlag{
-				Name:        "output-file-txt",
-				Aliases:     []string{"ot"},
-				DefaultText: "",
-				Usage:       "Specify relative path to TXT file where you want to save solution of the sudoku",
+				Usage:       "Specify path to file where you want to save solution of the sudoku (JSON or TXT, JSON is default)",
 			},
 		},
 		Action: func(context *cli.Context) error {
-			request := buildSolveCommandRequest(context)
-			return solveCommandHandler(request, commandConfig)
+			request := commandConfig.buildSolveCommandRequest(context)
+			return commandConfig.solveCommandHandler(request)
 		},
 	}
 }
 
 // solveCommandHandler is an entry point function for solve sudoku command
-func solveCommandHandler(request *models.SolveCommandRequest, commandConfig *CommandConfig) error {
-	rawSudoku, err := getSudokuInputRawData(request, commandConfig)
+func (commandConfig *CommandConfig) solveCommandHandler(request *models.SolveCommandRequest) error {
+	rawSudoku, err := commandConfig.getSudokuInputRawData(request)
 	if err != nil {
-		dataPrinters.PrintErrors("Invalid sudoku input", commandConfig.TerminalPrinter, err)
+		commandConfig.DataPrinter.PrintErrors("Invalid sudoku input", err)
 		return nil
 	}
 
-	sudoku, ok := executeSudokuInitialization(rawSudoku,
-		commandConfig.Settings, commandConfig.TerminalPrinter)
+	sudoku, ok := commandConfig.executeSudokuInitialization(rawSudoku)
 	if !ok {
 		return nil
 	}
 
-	solved, errs := crook.SolveWithCrookMethod(sudoku, commandConfig.Settings,
-		commandConfig.DebugPrinter)
+	solver := crook.GetNewSudokuSolver(commandConfig.Settings, commandConfig.DebugPrinter)
+	solved, errs := solver.Solve(sudoku)
 	if !solved {
-		commandConfig.TerminalPrinter.PrintError("Failed to solve the sudoku.\n")
+		commandConfig.TerminalPrinter.PrintError("Failed to solve the sudoku.")
+		commandConfig.TerminalPrinter.PrintNewLine()
 		return nil
 	}
 
 	if commandConfig.Settings.UseDebugPrints && len(errs) >= 1 {
-		dataPrinters.PrintErrors("Sudoku solution failure reasons:",
-			commandConfig.DebugPrinter, err)
+		commandConfig.DataPrinter.PrintErrors("Sudoku solution failure reasons:", err)
 		return nil
 	}
 
-	printSudoku("Sudoku puzzle solution:", sudoku,
-		commandConfig.Settings, commandConfig.TerminalPrinter)
+	commandConfig.printSudoku("Sudoku puzzle solution:", sudoku)
 
 	return nil
 }
 
 // getSudokuInputRawData retrieves sudoku raw data by analyzing the
 // request object and executing one of the data sources logic.
-func getSudokuInputRawData(request *models.SolveCommandRequest, commandConfig *CommandConfig) (*models.SudokuDTO, error) {
+func (commandConfig *CommandConfig) getSudokuInputRawData(
+	request *models.SolveCommandRequest) (*models.SudokuDTO, error) {
+
 	if request.InputJsonFile != nil {
-		return dataInputs.ReadFromJsonFile(*request.InputJsonFile)
+		return commandConfig.DataReader.ReadSudokuFromJsonFile(*request.InputJsonFile)
 	}
 
-	return dataInputs.ReadFromConsole(request.AsConfigRequest(),
-		commandConfig.Settings, commandConfig.TerminalPrinter, commandConfig.DebugPrinter)
+	return commandConfig.DataReader.ReadSudokuFromConsole(request.AsConfigRequest())
 }
 
 // buildSolveCommandRequest retrieves options settings from the command
 // and constructs request object.
-func buildSolveCommandRequest(context *cli.Context) *models.SolveCommandRequest {
-	inputJsonFile := context.String("input-file-json")
-	outputJsonFile := context.String("output-file-json")
-	outputTxtFile := context.String("output-file-txt")
+func (commandConfig *CommandConfig) buildSolveCommandRequest(context *cli.Context) *models.SolveCommandRequest {
 	boxSize := context.Int(boxSizeFlag.Name)
 	layoutWidth := context.Int(layoutWidthFlag.Name)
 	layoutHeight := context.Int(layoutHeightFlag.Name)
+	inputJsonFile := context.String("input-file")
+	outputFile := context.String("output-file")
+	overwrite := context.Bool(overwriteFileFlag.Name)
 
 	request := &models.SolveCommandRequest{}
-
-	if len(inputJsonFile) > 0 {
-		request.InputJsonFile = &inputJsonFile
-	}
-
-	if len(outputJsonFile) > 0 {
-		request.OutputJsonFile = &outputJsonFile
-	}
-
-	if len(outputTxtFile) > 0 {
-		request.OutputTxtFile = &outputTxtFile
-	}
 
 	if boxSize > 0 {
 		request.BoxSize = helpers.IntToInt8Pointer(boxSize)
@@ -126,6 +105,18 @@ func buildSolveCommandRequest(context *cli.Context) *models.SolveCommandRequest 
 
 	if layoutHeight > 0 {
 		request.LayoutHeight = helpers.IntToInt8Pointer(layoutHeight)
+	}
+
+	if len(inputJsonFile) > 0 {
+		request.InputJsonFile = &inputJsonFile
+	}
+
+	if len(outputFile) > 0 {
+		request.OutputFile = &outputFile
+	}
+
+	if overwrite {
+		request.Overwrite = true
 	}
 
 	return request

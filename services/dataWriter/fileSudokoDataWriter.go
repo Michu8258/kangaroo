@@ -1,4 +1,4 @@
-package dataOutputs
+package dataWriter
 
 import (
 	"encoding/json"
@@ -7,21 +7,19 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/dataPrinters"
-	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // SaveSudokuToJson executes sudoku object JSON dump to selected file.
 // Returns flag if indicating if file was written and potential error
-func SaveSudokuToJson(sudoku *models.Sudoku, path string, overwrite bool) (bool, error) {
+func (writer *DataWriter) SaveSudokuToJson(sudoku *models.Sudoku, path string, overwrite bool) (bool, error) {
 	sudokuDto := sudoku.ToSudokuDto()
-	return SaveSudokuDtoToJson(sudokuDto, path, overwrite)
+	return writer.SaveSudokuDtoToJson(sudokuDto, path, overwrite)
 }
 
 // SaveSudokuDtoToJson executes sudoku DTO object JSON dump to selected file.
 // Returns flag if indicating if file was written and potential error
-func SaveSudokuDtoToJson(sudokuDto *models.SudokuDTO, path string, overwrite bool) (bool, error) {
-	saveConfig := prepareSaveConfig(path, overwrite)
+func (writer *DataWriter) SaveSudokuDtoToJson(sudokuDto *models.SudokuDTO, path string, overwrite bool) (bool, error) {
+	saveConfig := writer.prepareSaveConfig(path, overwrite)
 	if saveConfig.shortCircuit {
 		return false, saveConfig.err
 	}
@@ -43,8 +41,10 @@ func SaveSudokuDtoToJson(sudokuDto *models.SudokuDTO, path string, overwrite boo
 
 // SaveSudokuToJson executes sudoku object TXT dump to selected file.
 // Returns flag if indicating if file was written and potential error
-func SaveSudokuToTxt(sudoku *models.Sudoku, settings *models.Settings, path string, overwrite bool) (bool, error) {
-	saveConfig := prepareSaveConfig(path, overwrite)
+func (writer *DataWriter) SaveSudokuToTxt(sudoku *models.Sudoku,
+	path string, overwrite bool) (bool, error) {
+
+	saveConfig := writer.prepareSaveConfig(path, overwrite)
 	if saveConfig.shortCircuit {
 		return false, saveConfig.err
 	}
@@ -56,8 +56,8 @@ func SaveSudokuToTxt(sudoku *models.Sudoku, settings *models.Settings, path stri
 
 	defer file.Close()
 
-	txtFilePrinter := printer.NewTxtFilePrinter(file)
-	dataPrinters.PrintSudoku(sudoku, settings, txtFilePrinter)
+	txtPrinter := writer.TxtPrinterProvider(file)
+	writer.DataPrinter.PrintSudoku(sudoku, txtPrinter)
 	file.Sync()
 
 	return true, nil
@@ -71,7 +71,7 @@ type saveConfig struct {
 
 // prepareSaveConfig executes initial checks and validates logic agains
 // file overwrite flag. Returns common file save configuration
-func prepareSaveConfig(path string, overwrite bool) saveConfig {
+func (writer *DataWriter) prepareSaveConfig(path string, overwrite bool) saveConfig {
 	absolutePath, err := helpers.MakeFilePathAbsolute(path)
 	if err != nil {
 		return saveConfig{

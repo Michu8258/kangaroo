@@ -1,4 +1,4 @@
-package initialization
+package sudokuInit
 
 import (
 	"fmt"
@@ -11,12 +11,12 @@ import (
 // validateSudokuValues checks if all sub sudokus boxes, rows and columns
 // contain values in permitted values range (if any value provided),
 // and values duplications
-func validateSudokuValues(sudoku *models.Sudoku) []error {
+func (init *SudokuInit) validateSudokuValues(sudoku *models.Sudoku) []error {
 	errs := []error{}
 
 	for _, subSudoku := range sudoku.SubSudokus {
 		for _, subSudokuBox := range subSudoku.Boxes {
-			errs = append(errs, validateCellsCollection(
+			errs = append(errs, init.validateCellsCollection(
 				sudoku,
 				sudoku.BoxSize,
 				subSudokuBox.Cells,
@@ -28,7 +28,7 @@ func validateSudokuValues(sudoku *models.Sudoku) []error {
 		}
 
 		for _, subSudokuLine := range subSudoku.ChildLines {
-			errs = append(errs, validateCellsCollection(
+			errs = append(errs, init.validateCellsCollection(
 				sudoku,
 				sudoku.BoxSize,
 				subSudokuLine.Cells,
@@ -45,8 +45,8 @@ func validateSudokuValues(sudoku *models.Sudoku) []error {
 
 // validateCellsCollection check if every cell with value has a value within an expected range,
 // and if the value is not duplicated within cells collection (box, row, columns).
-func validateCellsCollection(sudoku *models.Sudoku, boxSize int8, cells models.GenericSlice[*models.SudokuCell],
-	collectionType string, cellsErrorSetter func()) []error {
+func (init *SudokuInit) validateCellsCollection(sudoku *models.Sudoku, boxSize int8,
+	cells models.GenericSlice[*models.SudokuCell], collectionType string, cellsErrorSetter func()) []error {
 
 	errs := []error{}
 	minimumCellValue := 1

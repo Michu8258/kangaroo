@@ -1,4 +1,4 @@
-package initialization
+package sudokuInit
 
 import (
 	"fmt"
@@ -9,23 +9,23 @@ import (
 
 // ValidateRawData validates raw data - that is before constructing full Sudoku
 // object with SudokuLines and references assignment.
-func validateRawData(sudoku *models.Sudoku, settings *models.Settings) []error {
-	errs := validateLayout(sudoku, settings)
+func (init *SudokuInit) validateRawData(sudoku *models.Sudoku) []error {
+	errs := init.validateLayout(sudoku)
 	if len(errs) >= 1 {
 		return errs
 	}
 
-	errs = validateBoxesPresence(sudoku)
+	errs = init.validateBoxesPresence(sudoku)
 	if len(errs) >= 1 {
 		return errs
 	}
 
-	errs = validateCellsInitialValues(sudoku)
+	errs = init.validateCellsInitialValues(sudoku)
 	if len(errs) >= 1 {
 		return errs
 	}
 
-	errs = initializeSubSudokus(sudoku)
+	errs = init.initializeSubSudokus(sudoku)
 	if len(errs) >= 1 {
 		return errs
 	}
@@ -35,25 +35,27 @@ func validateRawData(sudoku *models.Sudoku, settings *models.Settings) []error {
 
 // validateLayout checks sudoku layout requirements - if box size is within the accepted
 // range, layout shape, sudoku boxes and cells presence.
-func validateLayout(sudoku *models.Sudoku, settings *models.Settings) []error {
+func (init *SudokuInit) validateLayout(sudoku *models.Sudoku) []error {
 	errs := []error{}
 
-	if sudoku.BoxSize < settings.MinimumBoxSizeInclusive || sudoku.BoxSize > settings.MaximumBoxSizeInclusive {
+	if sudoku.BoxSize < init.Settings.MinimumBoxSizeInclusive ||
+		sudoku.BoxSize > init.Settings.MaximumBoxSizeInclusive {
+
 		errs = append(errs, fmt.Errorf(
 			"box size has a value of %d, but it is expected to be between %d and %d inclusively",
 			sudoku.BoxSize,
-			settings.MinimumBoxSizeInclusive,
-			settings.MaximumBoxSizeInclusive))
+			init.Settings.MinimumBoxSizeInclusive,
+			init.Settings.MaximumBoxSizeInclusive))
 	}
 
-	widthError := validateLayoutSizeValue(sudoku.Layout.Width,
-		settings.MinimumLayoutSizeInclusive, settings.MaximumLayoutSizeInclusive, "width")
+	widthError := init.validateLayoutSizeValue(sudoku.Layout.Width,
+		init.Settings.MinimumLayoutSizeInclusive, init.Settings.MaximumLayoutSizeInclusive, "width")
 	if widthError != nil {
 		errs = append(errs, widthError)
 	}
 
-	heightError := validateLayoutSizeValue(sudoku.Layout.Height,
-		settings.MinimumLayoutSizeInclusive, settings.MaximumLayoutSizeInclusive, "height")
+	heightError := init.validateLayoutSizeValue(sudoku.Layout.Height,
+		init.Settings.MinimumLayoutSizeInclusive, init.Settings.MaximumLayoutSizeInclusive, "height")
 	if heightError != nil {
 		errs = append(errs, heightError)
 	}
@@ -64,7 +66,7 @@ func validateLayout(sudoku *models.Sudoku, settings *models.Settings) []error {
 		return errs
 	}
 
-	err := validateBoxesCount(sudoku)
+	err := init.validateBoxesCount(sudoku)
 	if err != nil {
 		errs = append(errs, err)
 	}
@@ -74,7 +76,7 @@ func validateLayout(sudoku *models.Sudoku, settings *models.Settings) []error {
 
 // validateBoxesCount check if sudoku object contains exactly as many
 // sudoku boxes as required by provided sudoku layout settings
-func validateBoxesCount(sudoku *models.Sudoku) error {
+func (init *SudokuInit) validateBoxesCount(sudoku *models.Sudoku) error {
 	expectedBoxesCount := int(sudoku.Layout.Height * sudoku.Layout.Width)
 	actualBoxesCount := len(sudoku.Boxes)
 	if expectedBoxesCount != actualBoxesCount {
@@ -89,7 +91,7 @@ func validateBoxesCount(sudoku *models.Sudoku) error {
 
 // validateBoxesPresence check if sudoku object contains all required sudoku boxes
 // with correct indexes
-func validateBoxesPresence(sudoku *models.Sudoku) []error {
+func (init *SudokuInit) validateBoxesPresence(sudoku *models.Sudoku) []error {
 	errs := []error{}
 
 	var rowIndex, columnIndex int8
@@ -112,7 +114,7 @@ func validateBoxesPresence(sudoku *models.Sudoku) []error {
 				continue
 			}
 
-			cellError := validateCellsPresence(sudoku, box)
+			cellError := init.validateCellsPresence(sudoku, box)
 			if cellError != nil {
 				errs = append(errs, cellError)
 			}
@@ -124,7 +126,9 @@ func validateBoxesPresence(sudoku *models.Sudoku) []error {
 
 // validateCellsPresence check if sudoku box contains all required sudoku cells
 // with correct indexes
-func validateCellsPresence(sudoku *models.Sudoku, box *models.SudokuBox) error {
+func (init *SudokuInit) validateCellsPresence(sudoku *models.Sudoku,
+	box *models.SudokuBox) error {
+
 	expectedCellsCount := int(sudoku.BoxSize * sudoku.BoxSize)
 	actualCellsCount := len(box.Cells)
 
@@ -159,7 +163,7 @@ func validateCellsPresence(sudoku *models.Sudoku, box *models.SudokuBox) error {
 
 // validateCellsInitialValues check if all sudoku cell that contain a value have
 // a value within accepted values range
-func validateCellsInitialValues(sudoku *models.Sudoku) []error {
+func (init *SudokuInit) validateCellsInitialValues(sudoku *models.Sudoku) []error {
 	errs := []error{}
 	minimumValue := 1
 	maximumValue := int(sudoku.BoxSize * sudoku.BoxSize)
@@ -195,7 +199,9 @@ func validateCellsInitialValues(sudoku *models.Sudoku) []error {
 }
 
 // validateLayoutSizeValue check sudoku layout size requirements
-func validateLayoutSizeValue(actualSize int8, minSize int8, maxSize int8, direction string) error {
+func (init *SudokuInit) validateLayoutSizeValue(actualSize int8,
+	minSize int8, maxSize int8, direction string) error {
+
 	if actualSize < minSize || actualSize > maxSize {
 		return fmt.Errorf(
 			"the sudoku layout %s has a value of %d, but it must be between %d and %d inclusively",

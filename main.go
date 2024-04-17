@@ -6,21 +6,34 @@ import (
 
 	"github.com/Michu8258/kangaroo/commands"
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/dataPrinters"
+	"github.com/Michu8258/kangaroo/services/dataReader"
+	"github.com/Michu8258/kangaroo/services/dataWriter"
 	"github.com/Michu8258/kangaroo/services/printer"
+	"github.com/Michu8258/kangaroo/services/sudokuInit"
 	"github.com/urfave/cli/v2"
 )
 
 // TODO presets commands family
 // TODO update documentation markdown file
-// TODO dependency inversion - services, inject printer type
 
 func main() {
 	settings := createSettings()
+	terminalPrinter := printer.NewTerminalPrinter(settings)
+	debugPrinter := printer.NewDebugPrinter(settings)
+	dataPrinter := dataPrinters.GetNewDataPrinter(settings, terminalPrinter)
 
 	commandConfig := &commands.CommandConfig{
 		Settings:        settings,
-		TerminalPrinter: printer.NewTerminalPrinter(settings),
-		DebugPrinter:    printer.NewDebugPrinter(settings),
+		TerminalPrinter: terminalPrinter,
+		DebugPrinter:    debugPrinter,
+		DataReader:      dataReader.GetNewDataReader(settings, terminalPrinter, debugPrinter),
+		DataPrinter:     dataPrinter,
+		DataWriter: dataWriter.GetNewDataWriter(settings, dataPrinter,
+			func(file *os.File) printer.IPrinter {
+				return printer.NewTxtFilePrinter(file)
+			}),
+		SudokuInit: sudokuInit.GetNewSudokuInit(settings),
 	}
 
 	app := &cli.App{
@@ -38,13 +51,13 @@ func main() {
 			&cli.BoolFlag{
 				Name:        "silent",
 				Value:       false,
-				Usage:       "supresses any standard output printing",
+				Usage:       "Supresses any standard output printing (prompts for inputs will still be printed)",
 				Destination: &commandConfig.Settings.SilentConsolePrints,
 			},
 		},
 		Commands: []*cli.Command{
-			commands.SolveCommand(commandConfig),
-			commands.CreateCommand(commandConfig),
+			commandConfig.SolveCommand(),
+			commandConfig.CreateCommand(),
 		},
 	}
 

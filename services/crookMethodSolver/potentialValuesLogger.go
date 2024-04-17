@@ -4,14 +4,13 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // printPotentialValues prints debug information to the console when called
-func printPotentialValues(sudoku *models.Sudoku, title string, debugPrinter printer.Printer) {
-	debugPrinter.PrintDefault(
+func (solver *CrookSolver) printPotentialValues(sudoku *models.Sudoku, title string) {
+	solver.DebugPrinter.PrintDefault(
 		fmt.Sprintf("==================== POTENTIAL VALUES | %s | ====================", title))
-	debugPrinter.PrintNewLine()
+	solver.DebugPrinter.PrintNewLine()
 
 	cellValuePrinter := func(v *int) string {
 		if v == nil {
@@ -51,22 +50,22 @@ func printPotentialValues(sudoku *models.Sudoku, title string, debugPrinter prin
 						potentialValuesPrinter(sudokuCell.PotentialValues))
 
 					if cellColumnIndex >= sudoku.BoxSize-1 {
-						debugPrinter.PrintDefault(fmt.Sprintf("%-25s", representation))
+						solver.DebugPrinter.PrintDefault(fmt.Sprintf("%-25s", representation))
 					} else {
-						debugPrinter.PrintDefault(fmt.Sprintf("%-20s", representation))
+						solver.DebugPrinter.PrintDefault(fmt.Sprintf("%-20s", representation))
 					}
 				}
 			}
 
-			debugPrinter.PrintNewLine()
+			solver.DebugPrinter.PrintNewLine()
 		}
 
 		if boxRowIndex < sudoku.Layout.Height-1 {
-			debugPrinter.PrintNewLine()
+			solver.DebugPrinter.PrintNewLine()
 		}
 	}
 
-	debugPrinter.PrintDefault(
+	solver.DebugPrinter.PrintDefault(
 		fmt.Sprintf("================== POTENTIAL VALUES END | %s | ====================", title))
-	debugPrinter.PrintNewLine()
+	solver.DebugPrinter.PrintNewLine()
 }

@@ -1,4 +1,4 @@
-package dataInputs
+package dataReader
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 // ReadFromJsonFile reads raw sudoku data object from file with specified path.
 // The path can be either relative (to main.go) or absolute.
 // TODO - add simplified sudoku DTO and parse too
-func ReadFromJsonFile(path string) (*models.SudokuDTO, error) {
+func (reader *DataReader) ReadSudokuFromJsonFile(path string) (*models.SudokuDTO, error) {
 	absolutePath, err := helpers.MakeFilePathAbsolute(path)
 	if err != nil {
 		return nil, err

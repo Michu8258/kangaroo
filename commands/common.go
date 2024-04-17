@@ -4,53 +4,52 @@ import (
 	"fmt"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/dataPrinters"
-	"github.com/Michu8258/kangaroo/services/initialization"
-	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // executeSudokuInitialization executes sudoku initialization (validation included)
 // based of dto input object. If everything is OK, sudoku data will be printer.
 // Returns mapped sudoku object and boolean flag indicating if everything is
 // correct up to this point
-func executeSudokuInitialization(sudokuDto *models.SudokuDTO, settings *models.Settings,
-	printer printer.Printer) (*models.Sudoku, bool) {
+func (commandConfig *CommandConfig) executeSudokuInitialization(
+	sudokuDto *models.SudokuDTO) (*models.Sudoku, bool) {
 
 	sudoku := sudokuDto.ToSudoku()
-	isSudokuPrintable, errs := initialization.InitializeSudoku(sudoku, settings)
+	isSudokuPrintable, errs := commandConfig.SudokuInit.InitializeSudoku(sudoku)
 
 	if len(errs) >= 1 {
-		dataPrinters.PrintErrors("Invalid sudoku configuration:", printer, errs...)
-		printer.PrintNewLine()
+		commandConfig.DataPrinter.PrintErrors("Invalid sudoku configuration:", errs...)
+		commandConfig.TerminalPrinter.PrintNewLine()
 		if isSudokuPrintable {
-			printSudoku("Invalid sudoku values", sudoku, settings, printer)
+			commandConfig.printSudoku("Invalid sudoku values", sudoku)
 		}
 		return sudoku, false
 	}
 
-	printSudokuConfig(sudoku, printer)
-	printSudoku("Provided sudoku input:", sudoku, settings, printer)
-	printer.PrintNewLine()
+	commandConfig.printSudokuConfig(sudoku)
+	commandConfig.printSudoku("Provided sudoku input:", sudoku)
+	commandConfig.TerminalPrinter.PrintNewLine()
 
 	return sudoku, true
 }
 
 // printSudokuConfig prints sudoku configuration with provided printer
-func printSudokuConfig(sudoku *models.Sudoku, printer printer.Printer) {
-	printer.PrintPrimary("Selected sudoku puzzle configuration:")
-	printer.PrintNewLine()
-	printer.PrintDefault(fmt.Sprintf("- sudoku box size %d", sudoku.BoxSize))
-	printer.PrintNewLine()
-	printer.PrintDefault(fmt.Sprintf("- sudoku layout width %d", sudoku.Layout.Width))
-	printer.PrintNewLine()
-	printer.PrintDefault(fmt.Sprintf("- sudoku layout height %d", sudoku.Layout.Width))
-	printer.PrintNewLine()
-	printer.PrintNewLine()
+func (commandConfig *CommandConfig) printSudokuConfig(sudoku *models.Sudoku) {
+	commandConfig.TerminalPrinter.PrintPrimary("Selected sudoku puzzle configuration:")
+	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- sudoku box size %d", sudoku.BoxSize))
+	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- sudoku layout width %d", sudoku.Layout.Width))
+	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- sudoku layout height %d", sudoku.Layout.Width))
+	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.TerminalPrinter.PrintNewLine()
 }
 
 // printSudoku prints sudoku to standard out
-func printSudoku(description string, sudoku *models.Sudoku, settings *models.Settings, printer printer.Printer) {
-	printer.PrintPrimary(description)
-	printer.PrintNewLine()
-	dataPrinters.PrintSudoku(sudoku, settings, printer)
+func (commandConfig *CommandConfig) printSudoku(description string,
+	sudoku *models.Sudoku) {
+
+	commandConfig.TerminalPrinter.PrintPrimary(description)
+	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.DataPrinter.PrintSudoku(sudoku, commandConfig.TerminalPrinter)
 }

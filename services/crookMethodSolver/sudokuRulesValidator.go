@@ -12,11 +12,11 @@ import (
 // If no rule is brokn, then true will be returned, otherwise, false.
 // In case a sudoku with all filled cells values is provided, true as a result
 // of this function will indicate correct sudoku solution.
-func validateSudokuRules(sudoku *models.Sudoku) (bool, error) {
+func (solver *CrookSolver) validateSudokuRules(sudoku *models.Sudoku) (bool, error) {
 	validationError := errors.New("validation error")
 
 	boxValidator := func(subSudokuBox *models.SudokuBox) error {
-		boxRuleViolated := checkRuleViolation(sudoku, subSudokuBox.Cells)
+		boxRuleViolated := solver.checkRuleViolation(sudoku, subSudokuBox.Cells)
 		if boxRuleViolated {
 			return validationError
 		}
@@ -25,7 +25,7 @@ func validateSudokuRules(sudoku *models.Sudoku) (bool, error) {
 	}
 
 	lineValidator := func(firstCellInLine *models.SudokuLine) error {
-		ruleViolated := checkRuleViolation(sudoku, firstCellInLine.Cells)
+		ruleViolated := solver.checkRuleViolation(sudoku, firstCellInLine.Cells)
 		if ruleViolated {
 			return validationError
 		}
@@ -50,7 +50,9 @@ func validateSudokuRules(sudoku *models.Sudoku) (bool, error) {
 }
 
 // checkRuleViolation returns true if the rule is violated (broken)
-func checkRuleViolation(sudoku *models.Sudoku, cells models.GenericSlice[*models.SudokuCell]) bool {
+func (solver *CrookSolver) checkRuleViolation(sudoku *models.Sudoku,
+	cells models.GenericSlice[*models.SudokuCell]) bool {
+
 	minValue := 1
 	maxValue := int(sudoku.BoxSize * sudoku.BoxSize)
 

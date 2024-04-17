@@ -1,4 +1,4 @@
-package initialization
+package sudokuInit
 
 import (
 	"github.com/Michu8258/kangaroo/models"
@@ -8,21 +8,21 @@ import (
 // That includes: Precomputing initial data, assigning circular references in
 // sudoku object, constructing subsudokus and validation of input data.
 // Returns boolean flag indicating that sudoku is printable and collection of errors
-func InitializeSudoku(sudoku *models.Sudoku, settings *models.Settings) (bool, []error) {
+func (init *SudokuInit) InitializeSudoku(sudoku *models.Sudoku) (bool, []error) {
 	errs := []error{}
 
-	errs = append(errs, validateRawData(sudoku, settings)...)
+	errs = append(errs, init.validateRawData(sudoku)...)
 	if len(errs) >= 1 {
 		return false, errs
 	}
 
-	err := assignSudokuReferences(sudoku)
+	err := init.assignSudokuReferences(sudoku)
 	if err != nil {
 		errs = append(errs, err)
 		return false, errs
 	}
 
-	errs = append(errs, validateSudokuValues(sudoku)...)
+	errs = append(errs, init.validateSudokuValues(sudoku)...)
 	if len(errs) >= 1 {
 		return true, errs
 	}

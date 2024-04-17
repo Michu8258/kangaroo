@@ -12,9 +12,9 @@ func (r *SudokuConfigRequest) AsConfigRequest() *SudokuConfigRequest {
 
 type SolveCommandRequest struct {
 	SudokuConfigRequest
-	InputJsonFile  *string
-	OutputJsonFile *string
-	OutputTxtFile  *string
+	Overwrite     bool
+	InputJsonFile *string
+	OutputFile    *string
 }
 
 type CreateCommandRequest struct {

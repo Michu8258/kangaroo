@@ -23,7 +23,7 @@ type sudokuValuesPrompt struct {
 // PromptSudokuValues wraps logic for prompting user for sudoku values
 // input with respect to prior configuration (box size, layout sizes)
 func PromptSudokuValues(sudokuDto *models.SudokuDTO, settings *models.Settings,
-	printer printer.Printer) error {
+	printer printer.IPrinter) error {
 
 	failError := fmt.Errorf("failed to get sudoku values from manual input")
 	initialModel, err := buildSudokuValuesPromptModel(sudokuDto, settings)

@@ -5,15 +5,15 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/printer"
 	guid "github.com/nu7hatch/gouuid"
 )
 
 // restoreSnapshotFromGuessedValue restores snapshot from guessed value for the sudoku,
 // excludes invalid potential value from potential values collection for the cell
 // referenced in sudoku value guess object.
-func restoreSnapshotFromGuessedValue(sudoku *models.Sudoku, cellValueGuess *models.SudokuValueGuess,
-	debugPrinter printer.Printer) error {
+func (solver *CrookSolver) restoreSnapshotFromGuessedValue(sudoku *models.Sudoku,
+	cellValueGuess *models.SudokuValueGuess) error {
+
 	snapshot := cellValueGuess.PotentialValuesSnapshot
 
 	// so we iterate through every cell, restore snapshot for thet cell
@@ -46,9 +46,9 @@ func restoreSnapshotFromGuessedValue(sudoku *models.Sudoku, cellValueGuess *mode
 		return potVal != cellValueGuess.GuessedValue
 	})
 
-	debugPrinter.PrintDefault(fmt.Sprintf("Restored potential values snapshot. "+
+	solver.DebugPrinter.PrintDefault(fmt.Sprintf("Restored potential values snapshot. "+
 		"New potential values for the cell: %v", updatedPotentialValues))
-	debugPrinter.PrintNewLine()
+	solver.DebugPrinter.PrintNewLine()
 
 	// we can assign it in guess object, because it holds reference to the actual cell
 	cellValueGuess.GuessedCell.PotentialValues = &updatedPotentialValues
@@ -60,10 +60,10 @@ func restoreSnapshotFromGuessedValue(sudoku *models.Sudoku, cellValueGuess *mode
 // designateSudokuGuess creates an object representing a value to guess in the sudoku puzzle.
 // returns boolean flag indicating if suitable cell was found, an object containing a
 // snapshot of current state of potential vales per sudoku cell, and error if offured.
-func designateSudokuGuess(sudoku *models.Sudoku, debugPrinter printer.Printer) (
+func (solver *CrookSolver) designateSudokuGuess(sudoku *models.Sudoku) (
 	bool, *models.SudokuValueGuess, error) {
 
-	cell, subSudokuId, err := findCellWithLowestPotentialValues(sudoku, debugPrinter)
+	cell, subSudokuId, err := solver.findCellWithLowestPotentialValues(sudoku)
 	if err != nil {
 		return false, nil, err
 	}
@@ -72,9 +72,9 @@ func designateSudokuGuess(sudoku *models.Sudoku, debugPrinter printer.Printer) (
 		return false, nil, nil
 	}
 
-	debugPrinter.PrintDefault("Found cell suitable for guessing potential value of.")
-	debugPrinter.PrintNewLine()
-	potentialValuesSnapshot := createPotentialValuesSnapshot(sudoku, debugPrinter)
+	solver.DebugPrinter.PrintDefault("Found cell suitable for guessing potential value of.")
+	solver.DebugPrinter.PrintNewLine()
+	potentialValuesSnapshot := solver.createPotentialValuesSnapshot(sudoku)
 
 	guess := &models.SudokuValueGuess{
 		GuessedValue:            (*cell.PotentialValues)[0],
@@ -83,11 +83,11 @@ func designateSudokuGuess(sudoku *models.Sudoku, debugPrinter printer.Printer) (
 		PotentialValuesSnapshot: potentialValuesSnapshot,
 	}
 
-	debugPrinter.PrintDefault(fmt.Sprintf("Created sudoku guess object. "+
+	solver.DebugPrinter.PrintDefault(fmt.Sprintf("Created sudoku guess object. "+
 		"Cell %s, value selected as guess, %d.",
 		helpers.GetCellCoordinatesString(sudoku, cell.Box, cell, true),
 		guess.GuessedValue))
-	debugPrinter.PrintNewLine()
+	solver.DebugPrinter.PrintNewLine()
 
 	return true, guess, nil
 }
@@ -95,8 +95,8 @@ func designateSudokuGuess(sudoku *models.Sudoku, debugPrinter printer.Printer) (
 // findCellWithLowestPotentialValues searches for cell most suitable for being selected as
 // a cell we will guess value for. Returns reference to the cell itself (pointer), containing
 // sub-sudoku id (pointer) and error (if occured)
-func findCellWithLowestPotentialValues(sudoku *models.Sudoku,
-	debugPrinter printer.Printer) (*models.SudokuCell, *guid.UUID, error) {
+func (solver *CrookSolver) findCellWithLowestPotentialValues(sudoku *models.Sudoku) (
+	*models.SudokuCell, *guid.UUID, error) {
 
 	var sudokuCell *models.SudokuCell
 	var subSudokuId *guid.UUID
@@ -107,17 +107,17 @@ func findCellWithLowestPotentialValues(sudoku *models.Sudoku,
 
 				if subSudokuBoxCell.Value == nil && subSudokuBoxCell.PotentialValues != nil {
 					if len(*subSudokuBoxCell.PotentialValues) == 0 {
-						debugPrinter.PrintDefault("Found a cell with no potantial values " +
+						solver.DebugPrinter.PrintDefault("Found a cell with no potantial values " +
 							"during sudoku cell guess selection.")
-						debugPrinter.PrintNewLine()
+						solver.DebugPrinter.PrintNewLine()
 
 						return nil, nil, nil
 					}
 
 					if len(*subSudokuBoxCell.PotentialValues) == 1 {
-						debugPrinter.PrintDefault("Found a cell with exactly one potantial value " +
+						solver.DebugPrinter.PrintDefault("Found a cell with exactly one potantial value " +
 							"during sudoku cell guess selection.")
-						debugPrinter.PrintNewLine()
+						solver.DebugPrinter.PrintNewLine()
 
 						return subSudokuBoxCell, &subSudokuBoxCell.Box.Id, nil
 					}
@@ -143,9 +143,9 @@ func findCellWithLowestPotentialValues(sudoku *models.Sudoku,
 	}
 
 	if sudokuCell == nil {
-		debugPrinter.PrintDefault("Did not find any cell suitable for guessing - " +
+		solver.DebugPrinter.PrintDefault("Did not find any cell suitable for guessing - " +
 			"perhaps there is no cell with potential values.")
-		debugPrinter.PrintNewLine()
+		solver.DebugPrinter.PrintNewLine()
 	}
 
 	return sudokuCell, subSudokuId, nil
@@ -153,7 +153,7 @@ func findCellWithLowestPotentialValues(sudoku *models.Sudoku,
 
 // createPotentialValuesSnapshot creates a snapshot map of the state of potential values
 // across all cells in the sudoku to
-func createPotentialValuesSnapshot(sudoku *models.Sudoku, printer printer.Printer) map[guid.UUID]*[]int {
+func (solver *CrookSolver) createPotentialValuesSnapshot(sudoku *models.Sudoku) map[guid.UUID]*[]int {
 	snapshot := map[guid.UUID]*[]int{}
 
 	for _, sudokuBox := range sudoku.Boxes {
@@ -171,9 +171,10 @@ func createPotentialValuesSnapshot(sudoku *models.Sudoku, printer printer.Printe
 		}
 	}
 
-	printer.PrintDefault(fmt.Sprintf(
-		"Built snapshot for sudoku potantial values. Snapshot length: %v\n",
+	solver.DebugPrinter.PrintDefault(fmt.Sprintf(
+		"Built snapshot for sudoku potantial values. Snapshot length: %v",
 		len(snapshot)))
+	solver.DebugPrinter.PrintNewLine()
 
 	return snapshot
 }

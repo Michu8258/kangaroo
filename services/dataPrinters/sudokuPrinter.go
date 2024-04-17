@@ -18,7 +18,7 @@ type sudokuPrintoutConfig struct {
 }
 
 // PrintSudoku prints entire sudoku puzzle pseudo-graphical representation to the console
-func PrintSudoku(sudoku *models.Sudoku, settings *models.Settings, printer printer.Printer) {
+func (dp *DataPrinter) PrintSudoku(sudoku *models.Sudoku, printer printer.IPrinter) {
 	defer func() {
 		if err := recover(); err != nil {
 			printer.PrintNewLine()
@@ -27,45 +27,52 @@ func PrintSudoku(sudoku *models.Sudoku, settings *models.Settings, printer print
 		}
 	}()
 
-	printoutConfig := buildSudokuPrintoutConfig(sudoku, settings)
-	printTopBorderLine(sudoku, printoutConfig, printer)
+	printoutConfig := dp.buildSudokuPrintoutConfig(sudoku)
+	dp.printTopBorderLine(sudoku, printoutConfig, printer)
 
 	var boxRowIndex int8 = 0
 	var cellRowIndex int8 = 0
 
 	for boxRowIndex = 0; boxRowIndex < sudoku.Layout.Height; boxRowIndex++ {
 		for cellRowIndex = 0; cellRowIndex < sudoku.BoxSize; cellRowIndex++ {
-			printValuesLine(sudoku, printoutConfig, int8(boxRowIndex), int8(cellRowIndex), printer)
+			dp.printValuesLine(sudoku, printer, printoutConfig, int8(boxRowIndex), int8(cellRowIndex))
 			if cellRowIndex < sudoku.BoxSize-1 {
-				printMidCellsLine(sudoku, printoutConfig, printer, boxRowIndex)
+				dp.printMidCellsLine(sudoku, printer, printoutConfig, boxRowIndex)
 			}
 		}
 
 		if boxRowIndex < sudoku.Layout.Height-1 {
-			printMidBoxesLine(sudoku, printoutConfig, printer)
+			dp.printMidBoxesLine(sudoku, printoutConfig, printer)
 		}
 	}
 
-	printBottomBorderLine(sudoku, printoutConfig, printer)
+	dp.printBottomBorderLine(sudoku, printoutConfig, printer)
 }
 
 // printTopBorderLine prints top border line of a sudoku puzzle
-func printTopBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer printer.Printer) {
-	printHorizontalBorderLine(sudoku, printoutConfig, "╔", "═", "╗", "╦", printer)
+func (dp *DataPrinter) printTopBorderLine(sudoku *models.Sudoku,
+	printoutConfig sudokuPrintoutConfig, printer printer.IPrinter) {
+
+	dp.printHorizontalBorderLine(sudoku, printoutConfig, printer, "╔", "═", "╗", "╦")
 }
 
 // printMidBoxesLine prints line of a sudoku puzzle that appears between boxes
-func printMidBoxesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer printer.Printer) {
-	printHorizontalBorderLine(sudoku, printoutConfig, "║", "═", "║", "╬", printer)
+func (dp *DataPrinter) printMidBoxesLine(sudoku *models.Sudoku,
+	printoutConfig sudokuPrintoutConfig, printer printer.IPrinter) {
+
+	dp.printHorizontalBorderLine(sudoku, printoutConfig, printer, "║", "═", "║", "╬")
 }
 
 // printBottomBorderLine prints bottom border line of a sudoku puzzle
-func printBottomBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer printer.Printer) {
-	printHorizontalBorderLine(sudoku, printoutConfig, "╚", "═", "╝", "╩", printer)
+func (dp *DataPrinter) printBottomBorderLine(sudoku *models.Sudoku,
+	printoutConfig sudokuPrintoutConfig, printer printer.IPrinter) {
+
+	dp.printHorizontalBorderLine(sudoku, printoutConfig, printer, "╚", "═", "╝", "╩")
 }
 
 // printMidCellsLine prints line of a sudoku puzzle that appears between cells
-func printMidCellsLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig, printer printer.Printer, boxRowIndex int8) {
+func (dp *DataPrinter) printMidCellsLine(sudoku *models.Sudoku, printer printer.IPrinter,
+	printoutConfig sudokuPrintoutConfig, boxRowIndex int8) {
 
 	printer.PrintBorder("║")
 
@@ -102,8 +109,8 @@ func printMidCellsLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfi
 
 // printValuesLine prinst single horizontal line with values of a sudoku puzzle
 // with respect to padding
-func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
-	boxRowIndex int8, cellRowIndex int8, printer printer.Printer) {
+func (dp *DataPrinter) printValuesLine(sudoku *models.Sudoku, printer printer.IPrinter,
+	printoutConfig sudokuPrintoutConfig, boxRowIndex int8, cellRowIndex int8) {
 
 	printer.PrintBorder("║")
 	for boxColumnIndex := 0; boxColumnIndex < int(sudoku.Layout.Width); boxColumnIndex++ {
@@ -122,7 +129,7 @@ func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 
 			if sudokuBox.Disabled {
 				for characterIndex := 0; characterIndex < printoutConfig.ValueCharactersLength; characterIndex++ {
-					printNoValuePlaceholder(printoutConfig, printer)
+					dp.printNoValuePlaceholder(printoutConfig, printer)
 				}
 			} else {
 				sudokuCell := sudokuBox.Cells.FirstOrDefault(nil, func(cell *models.SudokuCell) bool {
@@ -130,11 +137,11 @@ func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 				})
 
 				if sudokuCell.Value == nil {
-					printNoValuePlaceholder(printoutConfig, printer)
+					dp.printNoValuePlaceholder(printoutConfig, printer)
 				} else {
-					printValuePadding(printoutConfig, printer)
-					printSudokuValue(sudokuCell, printoutConfig, printer)
-					printValuePadding(printoutConfig, printer)
+					dp.printValuePadding(printoutConfig, printer)
+					dp.printSudokuValue(sudokuCell, printoutConfig, printer)
+					dp.printValuePadding(printoutConfig, printer)
 				}
 			}
 		}
@@ -149,7 +156,9 @@ func printValuesLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
 }
 
 // printSudokuValue prints out correctly formatter sudoku value
-func printSudokuValue(sudokuCell *models.SudokuCell, printoutConfig sudokuPrintoutConfig, printer printer.Printer) {
+func (dp *DataPrinter) printSudokuValue(sudokuCell *models.SudokuCell,
+	printoutConfig sudokuPrintoutConfig, printer printer.IPrinter) {
+
 	var printFunc func(text string)
 
 	isCellViolatingSudokuRule := sudokuCell.HasViolationError()
@@ -178,16 +187,21 @@ func printSudokuValue(sudokuCell *models.SudokuCell, printoutConfig sudokuPrinto
 
 // printNoValuePlaceholder prints empty spaces with amount adjusted with characters
 // per value and padding
-func printNoValuePlaceholder(printoutConfig sudokuPrintoutConfig, printer printer.Printer) {
-	printValuePadding(printoutConfig, printer)
+func (dp *DataPrinter) printNoValuePlaceholder(printoutConfig sudokuPrintoutConfig,
+	printer printer.IPrinter) {
+
+	dp.printValuePadding(printoutConfig, printer)
 	for characterIndex := 0; characterIndex < printoutConfig.ValueCharactersLength; characterIndex++ {
 		printer.PrintDefault(" ")
 	}
-	printValuePadding(printoutConfig, printer)
+
+	dp.printValuePadding(printoutConfig, printer)
 }
 
 // printValuePadding prints padding before and after a sudoku value (horizontal padding)
-func printValuePadding(printoutConfig sudokuPrintoutConfig, printer printer.Printer) {
+func (dp *DataPrinter) printValuePadding(printoutConfig sudokuPrintoutConfig,
+	printer printer.IPrinter) {
+
 	if printoutConfig.Padding >= 1 {
 		for paddingIndex := 0; paddingIndex < printoutConfig.Padding; paddingIndex++ {
 			printer.PrintDefault(" ")
@@ -197,8 +211,8 @@ func printValuePadding(printoutConfig sudokuPrintoutConfig, printer printer.Prin
 
 // printHorizontalBorderLine is a function that will print horizontal sudoku line
 // (between horizontal boxes or cells) with provided characters
-func printHorizontalBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
-	startSign string, middleSign string, endSign string, columnCrossSign string, printer printer.Printer) {
+func (dp *DataPrinter) printHorizontalBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrintoutConfig,
+	printer printer.IPrinter, startSign string, middleSign string, endSign string, columnCrossSign string) {
 
 	printer.PrintBorder(startSign)
 
@@ -223,7 +237,7 @@ func printHorizontalBorderLine(sudoku *models.Sudoku, printoutConfig sudokuPrint
 
 // buildSudokuPrintoutConfig creates rintout configuration that is used to
 // actually make a printout of a sudoku
-func buildSudokuPrintoutConfig(sudoku *models.Sudoku, settings *models.Settings) sudokuPrintoutConfig {
+func (dp *DataPrinter) buildSudokuPrintoutConfig(sudoku *models.Sudoku) sudokuPrintoutConfig {
 	valueCharactersLength := len(strconv.Itoa(int(sudoku.BoxSize * sudoku.BoxSize)))
 
 	valuesPerLine := int(sudoku.Layout.Width * sudoku.BoxSize)
@@ -235,6 +249,6 @@ func buildSudokuPrintoutConfig(sudoku *models.Sudoku, settings *models.Settings)
 		MaxIndex:              int(math.Max(0, float64(sudoku.BoxSize-1))),
 		CharactersPerLine:     valuesCharactersCountPerLine + separatorsCount,
 		BoxSize:               int(sudoku.BoxSize),
-		Padding:               int(settings.SudokuPrintoutValuePaddingLength),
+		Padding:               int(dp.Settings.SudokuPrintoutValuePaddingLength),
 	}
 }

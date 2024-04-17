@@ -2,14 +2,12 @@ package dataPrinters
 
 import (
 	"strings"
-
-	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // PrintErrors prints errors list
-func PrintErrors(errorsHeader string, printer printer.Printer, errors ...error) {
-	printer.PrintError(errorsHeader)
-	printer.PrintNewLine()
+func (dp *DataPrinter) PrintErrors(errorsHeader string, errors ...error) {
+	dp.TerminalPrinter.PrintError(errorsHeader)
+	dp.TerminalPrinter.PrintNewLine()
 
 	for _, err := range errors {
 		errorString := err.Error()
@@ -20,11 +18,11 @@ func PrintErrors(errorsHeader string, printer printer.Printer, errors ...error) 
 				restOfError = errorString[1:]
 			}
 
-			printer.PrintError("✗ ")
-			printer.PrintError(strings.ToUpper(firstLetter))
-			printer.PrintError(restOfError)
-			printer.PrintError(".")
-			printer.PrintNewLine()
+			dp.TerminalPrinter.PrintError("✗ ")
+			dp.TerminalPrinter.PrintError(strings.ToUpper(firstLetter))
+			dp.TerminalPrinter.PrintError(restOfError)
+			dp.TerminalPrinter.PrintError(".")
+			dp.TerminalPrinter.PrintNewLine()
 		}
 	}
 }

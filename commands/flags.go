@@ -22,3 +22,10 @@ var layoutHeightFlag cli.IntFlag = cli.IntFlag{
 	DefaultText: "0",
 	Usage:       "How many boxes there are in the column - in case of classic sudoku it is 3",
 }
+
+var overwriteFileFlag cli.BoolFlag = cli.BoolFlag{
+	Name:        "overwrite",
+	Aliases:     []string{"r"},
+	DefaultText: "false",
+	Usage:       "Overwrite provided file(s) paths if exist",
+}

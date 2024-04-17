@@ -1,6 +1,6 @@
 package printer
 
-type Printer interface {
+type IPrinter interface {
 	PrintDefault(text string)
 	PrintPrimary(text string)
 	PrintSuccess(text string)

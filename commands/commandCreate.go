@@ -6,15 +6,11 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/dataInputs"
-	"github.com/Michu8258/kangaroo/services/dataOutputs"
-	"github.com/Michu8258/kangaroo/services/dataPrinters"
-	"github.com/Michu8258/kangaroo/services/printer"
 	"github.com/urfave/cli/v2"
 )
 
 // CreateCommand provides create command configuration
-func CreateCommand(commandConfig *CommandConfig) *cli.Command {
+func (commandConfig *CommandConfig) CreateCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "create",
 		Aliases: []string{"c"},
@@ -24,68 +20,63 @@ func CreateCommand(commandConfig *CommandConfig) *cli.Command {
 			&boxSizeFlag,
 			&layoutWidthFlag,
 			&layoutHeightFlag,
-			&cli.BoolFlag{
-				Name:        "overwrite",
-				Aliases:     []string{"o"},
-				DefaultText: "false",
-				Usage:       "Overwrite provided files if exist",
-			},
+			&overwriteFileFlag,
 		},
 		Action: func(context *cli.Context) error {
-			request := buildCreateCommandRequest(context)
+			request := commandConfig.buildCreateCommandRequest(context)
 			filePaths := context.Args().Slice()
-			return createCommandHandler(request, commandConfig, filePaths)
+			return commandConfig.createCommandHandler(request, filePaths)
 		},
 	}
 }
 
 // createCommandHandler is an entry point function to create sudoku data file
-func createCommandHandler(request *models.CreateCommandRequest, commandConfig *CommandConfig,
+func (commandConfig *CommandConfig) createCommandHandler(request *models.CreateCommandRequest,
 	destinationFilePaths []string) error {
 
 	if len(destinationFilePaths) < 1 {
 		commandConfig.TerminalPrinter.PrintError(
-			"Please provide at least one argument for output file location.\n")
+			"Please provide at least one argument for output file location.")
+		commandConfig.TerminalPrinter.PrintNewLine()
 		return nil
 	}
 
-	validPaths, errorPaths := validateDestinationFilePaths(destinationFilePaths)
+	validPaths, errorPaths := commandConfig.validateDestinationFilePaths(destinationFilePaths)
 	if len(errorPaths) > 0 {
-		dataPrinters.PrintErrors("Optput files listed below are not supported",
-			commandConfig.TerminalPrinter, errorPaths...)
+		commandConfig.DataPrinter.PrintErrors(
+			"Optput files listed below are not supported", errorPaths...)
 	}
 
 	if len(validPaths) < 1 {
 		commandConfig.TerminalPrinter.PrintError(
-			"No supported file path to save sudoku data to.\n")
+			"No supported file path to save sudoku data to.")
+		commandConfig.TerminalPrinter.PrintNewLine()
 		return nil
 	}
 
-	sudokuDto, err := dataInputs.ReadFromConsole(request.AsConfigRequest(),
-		commandConfig.Settings, commandConfig.TerminalPrinter, commandConfig.DebugPrinter)
+	sudokuDto, err := commandConfig.DataReader.ReadSudokuFromConsole(request.AsConfigRequest())
 	if err != nil {
-		dataPrinters.PrintErrors("Invalid sudoku input", commandConfig.TerminalPrinter, err)
+		commandConfig.DataPrinter.PrintErrors("Invalid sudoku input", err)
 		return nil
 	}
 
-	sudoku, ok := executeSudokuInitialization(sudokuDto, commandConfig.Settings,
-		commandConfig.TerminalPrinter)
+	sudoku, ok := commandConfig.executeSudokuInitialization(sudokuDto)
 	if !ok {
 		return nil
 	}
 
-	commandConfig.TerminalPrinter.PrintPrimary("Saving results:\n")
+	commandConfig.TerminalPrinter.PrintPrimary("Saving results:")
+	commandConfig.TerminalPrinter.PrintNewLine()
 	for _, path := range validPaths {
-		saveToFile(sudoku, request, path,
-			commandConfig.TerminalPrinter, commandConfig.Settings)
+		commandConfig.saveToFile(sudoku, request, path)
 	}
 
 	return nil
 }
 
 // executes save to file logic
-func saveToFile(sudoku *models.Sudoku, request *models.CreateCommandRequest,
-	path string, printer printer.Printer, settings *models.Settings) {
+func (commandConfig *CommandConfig) saveToFile(sudoku *models.Sudoku,
+	request *models.CreateCommandRequest, path string) {
 
 	extension := filepath.Ext(path)
 
@@ -93,31 +84,33 @@ func saveToFile(sudoku *models.Sudoku, request *models.CreateCommandRequest,
 	var err error
 
 	if extension == ".txt" {
-		written, err = dataOutputs.SaveSudokuToTxt(sudoku, settings, path, request.Overwrite)
+		written, err = commandConfig.DataWriter.SaveSudokuToTxt(sudoku, path, request.Overwrite)
 	} else {
-		written, err = dataOutputs.SaveSudokuToJson(sudoku, path, request.Overwrite)
+		written, err = commandConfig.DataWriter.SaveSudokuToJson(sudoku, path, request.Overwrite)
 	}
 
 	if err != nil {
-		printer.PrintError(fmt.Sprintf("- %s", err))
-		printer.PrintNewLine()
+		commandConfig.TerminalPrinter.PrintError(fmt.Sprintf("- %s", err))
+		commandConfig.TerminalPrinter.PrintNewLine()
 		return
 	}
 
 	if written {
-		printer.PrintSuccess(fmt.Sprintf("- '%s' written successfully", path))
-		printer.PrintNewLine()
+		commandConfig.TerminalPrinter.PrintSuccess(fmt.Sprintf("- '%s' written successfully", path))
+		commandConfig.TerminalPrinter.PrintNewLine()
 		return
 	}
 
-	printer.PrintDefault(fmt.Sprintf("- '%s' already exists (ommited)", path))
-	printer.PrintNewLine()
+	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- '%s' already exists (ommited)", path))
+	commandConfig.TerminalPrinter.PrintNewLine()
 }
 
 // validateDestinationFilePaths checks if all provided file names have no extension
 // or have json or txt extension. Returns slice ov valid names and slice of errors
 // for those not matching the criteria.
-func validateDestinationFilePaths(destinationFilePaths []string) ([]string, []error) {
+func (commandConfig *CommandConfig) validateDestinationFilePaths(
+	destinationFilePaths []string) ([]string, []error) {
+
 	validPaths := []string{}
 	errs := []error{}
 
@@ -141,11 +134,13 @@ func validateDestinationFilePaths(destinationFilePaths []string) ([]string, []er
 
 // buildCreateCommandRequest retrieves options settings from the command
 // and constructs request object.
-func buildCreateCommandRequest(context *cli.Context) *models.CreateCommandRequest {
+func (commandConfig *CommandConfig) buildCreateCommandRequest(
+	context *cli.Context) *models.CreateCommandRequest {
+
 	boxSize := context.Int(boxSizeFlag.Name)
 	layoutWidth := context.Int(layoutWidthFlag.Name)
 	layoutHeight := context.Int(layoutHeightFlag.Name)
-	overwrite := context.Bool("overwrite")
+	overwrite := context.Bool(overwriteFileFlag.Name)
 
 	request := &models.CreateCommandRequest{}
 

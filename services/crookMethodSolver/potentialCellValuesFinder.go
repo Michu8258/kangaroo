@@ -7,15 +7,13 @@ import (
 
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/printer"
 )
 
 // assignCellsPotentialValues assigns potential sudoku cell values.
 // Potential cell values are also known and referred tu under the name
 // of sudoku cell mark up. Returns a flag indicating if any of the cells
 // has empty slice of potential values, and errir if any ocured.
-func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings,
-	debugPrinter printer.Printer) (bool, []error) {
+func (solver *CrookSolver) assignCellsPotentialValues(sudoku *models.Sudoku) (bool, []error) {
 
 	errs := []error{}
 	anyPotentialValuesSliceIsEmpty := false
@@ -32,13 +30,12 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 				}
 
 				// looking in box containing given cell
-				emptyPotVal, err := findPotentialValuesForCell(
+				emptyPotVal, err := solver.findPotentialValuesForCell(
 					sudoku,
 					subSudokuBoxCell,
 					subSudokuBoxCell.Box.Cells,
 					minimumValue,
-					maximumValue,
-					debugPrinter)
+					maximumValue)
 
 				if err != nil {
 					errs = append(errs, err)
@@ -54,13 +51,12 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 				})
 
 				for _, subSudokuLine := range linesWithinSubsudoku {
-					emptyPotVal, err = findPotentialValuesForCell(
+					emptyPotVal, err = solver.findPotentialValuesForCell(
 						sudoku,
 						subSudokuBoxCell,
 						subSudokuLine.Cells,
 						minimumValue,
-						maximumValue,
-						debugPrinter)
+						maximumValue)
 
 					if err != nil {
 						errs = append(errs, err)
@@ -75,8 +71,8 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 
 	}
 
-	if settings.UseDebugPrints {
-		printPotentialValues(sudoku, "POTENTIAL VALUES FINDER", debugPrinter)
+	if solver.Settings.UseDebugPrints {
+		solver.printPotentialValues(sudoku, "POTENTIAL VALUES FINDER")
 	}
 
 	return anyPotentialValuesSliceIsEmpty, errs
@@ -87,9 +83,9 @@ func assignCellsPotentialValues(sudoku *models.Sudoku, settings *models.Settings
 // is performed if the same cell will be iterated for the second and nth time. Returns
 // boolean flag indicating if the given cell has empty potential values slice, and
 // error if any occured during processing
-func findPotentialValuesForCell(sudoku *models.Sudoku, cell *models.SudokuCell,
+func (solver *CrookSolver) findPotentialValuesForCell(sudoku *models.Sudoku, cell *models.SudokuCell,
 	cellsCollection models.GenericSlice[*models.SudokuCell],
-	minimumCellValue int, maximumCellValue int, debugPrinter printer.Printer) (
+	minimumCellValue int, maximumCellValue int) (
 	emptyPotentialValues bool, errorResult error) {
 
 	// in cas something went wrong
@@ -118,7 +114,7 @@ func findPotentialValuesForCell(sudoku *models.Sudoku, cell *models.SudokuCell,
 	if cell.PotentialValues == nil {
 		// this is first iteration for this cell
 		cell.PotentialValues = &potentialValues
-		logNoPotentialValues(sudoku, cell, debugPrinter)
+		solver.logNoPotentialValues(sudoku, cell)
 		return len(potentialValues) == 0, nil
 	}
 
@@ -126,17 +122,17 @@ func findPotentialValuesForCell(sudoku *models.Sudoku, cell *models.SudokuCell,
 	// by taking a common items in both slices
 	intersection := cell.PotentialValues.Intersect(potentialValues)
 	cell.PotentialValues = &intersection
-	logNoPotentialValues(sudoku, cell, debugPrinter)
+	solver.logNoPotentialValues(sudoku, cell)
 
 	return len(intersection) == 0, nil
 }
 
 // logNoPotentialValues log information about no potential values in
-func logNoPotentialValues(sudoku *models.Sudoku, cell *models.SudokuCell, debugPrinter printer.Printer) {
+func (solver *CrookSolver) logNoPotentialValues(sudoku *models.Sudoku, cell *models.SudokuCell) {
 	if cell.PotentialValues != nil && len(*cell.PotentialValues) == 0 {
-		debugPrinter.PrintDefault(fmt.Sprintf(
+		solver.DebugPrinter.PrintDefault(fmt.Sprintf(
 			"Found a cell %s with no potential values during assigning potential values.",
 			helpers.GetCellCoordinatesString(sudoku, cell.Box, cell, true)))
-		debugPrinter.PrintNewLine()
+		solver.DebugPrinter.PrintNewLine()
 	}
 }
