@@ -21,5 +21,6 @@
 go.work
 
 # custom
-/.vs
-/.vscode
+.vs
+.vscode
+.cover

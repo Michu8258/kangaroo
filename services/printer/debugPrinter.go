@@ -10,7 +10,7 @@ type DebugPrinter struct {
 	settings *models.Settings
 }
 
-func NewDebugPrinter(settings *models.Settings) DebugPrinter {
+func NewDebugPrinter(settings *models.Settings) IPrinter {
 	return DebugPrinter{
 		settings: settings,
 	}

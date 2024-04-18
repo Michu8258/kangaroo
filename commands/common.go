@@ -91,7 +91,7 @@ func (commandConfig *CommandContext) saveSudokuToFile(sudoku *models.Sudoku,
 }
 
 // executeSudokuInitialization executes sudoku initialization (validation included)
-// based of dto input object. If everything is OK, sudoku data will be printer.
+// based of dto input object. If everything is OK, sudoku data will be printed.
 // Returns mapped sudoku object and boolean flag indicating if everything is
 // correct up to this point
 func (commandConfig *CommandContext) executeSudokuInitialization(
@@ -123,15 +123,19 @@ func (commandConfig *CommandContext) printSudokuConfig(sudoku *models.Sudoku) {
 	commandConfig.ServiceCollection.TerminalPrinter.PrintPrimary(
 		"Selected sudoku puzzle configuration:")
 	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+
 	commandConfig.ServiceCollection.TerminalPrinter.PrintDefault(
 		fmt.Sprintf("- sudoku box size %d", sudoku.BoxSize))
 	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+
 	commandConfig.ServiceCollection.TerminalPrinter.PrintDefault(
 		fmt.Sprintf("- sudoku layout width %d", sudoku.Layout.Width))
 	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+
 	commandConfig.ServiceCollection.TerminalPrinter.PrintDefault(
 		fmt.Sprintf("- sudoku layout height %d", sudoku.Layout.Width))
 	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+
 	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 }
 

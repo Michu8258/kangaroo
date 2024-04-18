@@ -1,0 +1,1 @@
+go test $(go list ./... | grep -v testHelpers) -v -coverprofile ./.cover/cover.txt && go tool cover -html=./.cover/cover.txt -o ./.cover/cover.html && go tool cover -html=./.cover/cover.txt

@@ -6,7 +6,7 @@ type TxtFilePrinter struct {
 	file *os.File
 }
 
-func NewTxtFilePrinter(file *os.File) TxtFilePrinter {
+func NewTxtFilePrinter(file *os.File) IPrinter {
 	return TxtFilePrinter{
 		file: file,
 	}

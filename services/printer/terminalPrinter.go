@@ -10,7 +10,7 @@ type TerminalPrinter struct {
 	settings *models.Settings
 }
 
-func NewTerminalPrinter(settings *models.Settings) TerminalPrinter {
+func NewTerminalPrinter(settings *models.Settings) IPrinter {
 	return TerminalPrinter{
 		settings: settings,
 	}
