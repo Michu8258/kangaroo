@@ -7,9 +7,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// TODO - test algorithm against unsolvable sudoku,
-// TODO - add tests with script
-
 // SolveCommand provides solve sudoku command configuration
 func (commandConfig *CommandContext) SolveCommand() *cli.Command {
 	return &cli.Command{

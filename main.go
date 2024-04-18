@@ -12,6 +12,9 @@ import (
 
 // TODO presets commands family
 // TODO update documentation markdown file
+// TODO - add simplified sudoku DTO and parse too
+// TODO - test algorithm against unsolvable sudoku,
+// TODO - add tests with script
 
 func main() {
 	settings := createSettings()
