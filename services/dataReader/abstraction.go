@@ -3,12 +3,14 @@ package dataReader
 import (
 	"github.com/Michu8258/kangaroo/models"
 	"github.com/Michu8258/kangaroo/services/printer"
+	"github.com/Michu8258/kangaroo/services/prompts"
 )
 
 type DataReader struct {
 	Settings        *models.Settings
 	TerminalPrinter printer.IPrinter
 	DebugPrinter    printer.IPrinter
+	Prompter        prompts.IPrompter
 }
 
 type IDataReader interface {
@@ -17,10 +19,13 @@ type IDataReader interface {
 }
 
 func GetNewDataReader(settings *models.Settings,
-	terminalPrinter printer.IPrinter, debugPrinter printer.IPrinter) IDataReader {
+	terminalPrinter printer.IPrinter,
+	debugPrinter printer.IPrinter,
+	prompter prompts.IPrompter) IDataReader {
 	return &DataReader{
 		Settings:        settings,
 		TerminalPrinter: terminalPrinter,
 		DebugPrinter:    debugPrinter,
+		Prompter:        prompter,
 	}
 }

@@ -8,37 +8,35 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type PromptSelectOption[T comparable] struct {
+type PromptSelectOption struct {
 	Label string
-	Value T
+	Value interface{}
 }
 
-type promptSelect[T comparable] struct {
+type promptSelect struct {
 	cursor       int
 	title        string
-	activeChoice PromptSelectOption[T]
-	choices      []PromptSelectOption[T]
+	activeChoice PromptSelectOption
+	choices      []PromptSelectOption
 	quit         bool
 }
 
 // PromptMakeSelectChoice wraps logic for promptin the user to select
 // one of selected option (with default option index).
-func PromptMakeSelectChoice[T comparable](title string, options []PromptSelectOption[T],
-	initialChoiceIndex int) (PromptSelectOption[T], error) {
-
-	program := tea.NewProgram(promptSelect[T]{
+func (prompter *Prompter) PromptMakeSelectChoice(title string, options []PromptSelectOption,
+	initialChoiceIndex int) (PromptSelectOption, error) {
+	model, err := prompter.TeaProgramRunner(promptSelect{
 		cursor:       initialChoiceIndex,
 		activeChoice: options[initialChoiceIndex],
 		choices:      options,
 		title:        title,
 	})
 
-	model, err := program.Run()
 	if err != nil {
 		return options[initialChoiceIndex], err
 	}
 
-	if m, ok := model.(promptSelect[T]); ok {
+	if m, ok := model.(promptSelect); ok {
 		return m.activeChoice, nil
 	}
 
@@ -46,12 +44,12 @@ func PromptMakeSelectChoice[T comparable](title string, options []PromptSelectOp
 }
 
 // Init iniitalizes tea model state
-func (m promptSelect[T]) Init() tea.Cmd {
+func (m promptSelect) Init() tea.Cmd {
 	return nil
 }
 
 // Update updates tea model state
-func (m promptSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m promptSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -83,7 +81,7 @@ func (m promptSelect[T]) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // view renders output based on model state
-func (m promptSelect[T]) View() string {
+func (m promptSelect) View() string {
 	if m.quit {
 		return ""
 	}

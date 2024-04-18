@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/prompts"
 )
 
 // ReadFromConsole reads raw sudoku data based on user console inputs.
@@ -16,19 +15,17 @@ func (reader *DataReader) ReadSudokuFromConsole(request *models.SudokuConfigRequ
 
 	readError := errors.New("failed to read sudoku user data inputs")
 
-	boxSize, err := prompts.PromptGetBoxSize(request.BoxSize, reader.Settings)
+	boxSize, err := reader.Prompter.PromptGetBoxSize(request.BoxSize)
 	if err != nil {
 		return nil, readError
 	}
 
-	layoutWidth, err := prompts.PromptGetLayoutSize(
-		request.LayoutWidth, "width", reader.Settings)
+	layoutWidth, err := reader.Prompter.PromptGetLayoutSize(request.LayoutWidth, "width")
 	if err != nil {
 		return nil, readError
 	}
 
-	layoutHeight, err := prompts.PromptGetLayoutSize(
-		request.LayoutHeight, "height", reader.Settings)
+	layoutHeight, err := reader.Prompter.PromptGetLayoutSize(request.LayoutHeight, "height")
 	if err != nil {
 		return nil, readError
 	}
@@ -38,7 +35,7 @@ func (reader *DataReader) ReadSudokuFromConsole(request *models.SudokuConfigRequ
 	request.LayoutHeight = &layoutHeight
 
 	sudokuDto := reader.buildEmptySudokuDTO(request)
-	err = prompts.PromptSudokuValues(sudokuDto, reader.Settings, reader.TerminalPrinter)
+	err = reader.Prompter.PromptSudokuValues(sudokuDto)
 	if err != nil {
 		reader.DebugPrinter.PrintError(err.Error())
 		reader.DebugPrinter.PrintNewLine()

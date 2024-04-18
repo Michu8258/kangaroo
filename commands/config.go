@@ -6,6 +6,7 @@ import (
 	"github.com/Michu8258/kangaroo/services/dataReader"
 	"github.com/Michu8258/kangaroo/services/dataWriter"
 	"github.com/Michu8258/kangaroo/services/printer"
+	"github.com/Michu8258/kangaroo/services/prompts"
 	"github.com/Michu8258/kangaroo/services/sudokuInit"
 )
 
@@ -17,4 +18,5 @@ type CommandConfig struct {
 	DataWriter      dataWriter.IDataWriter
 	DataPrinter     dataPrinters.IDataPrinter
 	SudokuInit      sudokuInit.ISudokuInit
+	Prompter        prompts.IPrompter
 }
