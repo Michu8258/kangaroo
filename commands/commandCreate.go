@@ -7,7 +7,7 @@ import (
 )
 
 // CreateCommand provides create command configuration
-func (commandConfig *CommandConfig) CreateCommand() *cli.Command {
+func (commandConfig *CommandContext) CreateCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "create",
 		Aliases: []string{"c"},
@@ -28,13 +28,13 @@ func (commandConfig *CommandConfig) CreateCommand() *cli.Command {
 }
 
 // createCommandHandler is an entry point function to create sudoku data file
-func (commandConfig *CommandConfig) createCommandHandler(request *models.CreateCommandRequest,
+func (commandConfig *CommandContext) createCommandHandler(request *models.CreateCommandRequest,
 	destinationFilePaths []string) error {
 
 	if len(destinationFilePaths) < 1 {
-		commandConfig.TerminalPrinter.PrintError(
+		commandConfig.ServiceCollection.TerminalPrinter.PrintError(
 			"Please provide at least one argument for output file location.")
-		commandConfig.TerminalPrinter.PrintNewLine()
+		commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 		return nil
 	}
 
@@ -43,9 +43,11 @@ func (commandConfig *CommandConfig) createCommandHandler(request *models.CreateC
 		return nil
 	}
 
-	sudokuDto, err := commandConfig.DataReader.ReadSudokuFromConsole(request.AsConfigRequest())
+	sudokuDto, err := commandConfig.ServiceCollection.DataReader.
+		ReadSudokuFromConsole(request.AsConfigRequest())
 	if err != nil {
-		commandConfig.DataPrinter.PrintErrors("Invalid sudoku input", err)
+		commandConfig.ServiceCollection.DataPrinter.
+			PrintErrors("Invalid sudoku input", err)
 		return nil
 	}
 
@@ -61,7 +63,7 @@ func (commandConfig *CommandConfig) createCommandHandler(request *models.CreateC
 
 // buildCreateCommandRequest retrieves options settings from the command
 // and constructs request object.
-func (commandConfig *CommandConfig) buildCreateCommandRequest(
+func (commandConfig *CommandContext) buildCreateCommandRequest(
 	context *cli.Context) *models.CreateCommandRequest {
 
 	boxSize := context.Int(boxSizeFlag.Name)

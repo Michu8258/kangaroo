@@ -6,13 +6,7 @@ import (
 
 	"github.com/Michu8258/kangaroo/commands"
 	"github.com/Michu8258/kangaroo/models"
-	"github.com/Michu8258/kangaroo/services/dataPrinters"
-	"github.com/Michu8258/kangaroo/services/dataReader"
-	"github.com/Michu8258/kangaroo/services/dataWriter"
-	"github.com/Michu8258/kangaroo/services/printer"
-	"github.com/Michu8258/kangaroo/services/prompts"
-	"github.com/Michu8258/kangaroo/services/sudokuInit"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/Michu8258/kangaroo/services"
 	"github.com/urfave/cli/v2"
 )
 
@@ -21,29 +15,10 @@ import (
 
 func main() {
 	settings := createSettings()
-	terminalPrinter := printer.NewTerminalPrinter(settings)
-	debugPrinter := printer.NewDebugPrinter(settings)
-	dataPrinter := dataPrinters.GetNewDataPrinter(settings, terminalPrinter)
-	prompter := prompts.GetNewPrompter(
-		settings,
-		terminalPrinter,
-		func(model tea.Model, opts ...tea.ProgramOption) (tea.Model, error) {
-			program := tea.NewProgram(model, opts...)
-			return program.Run()
-		})
 
-	commandConfig := &commands.CommandConfig{
-		Settings:        settings,
-		TerminalPrinter: terminalPrinter,
-		DebugPrinter:    debugPrinter,
-		Prompter:        prompter,
-		DataPrinter:     dataPrinter,
-		SudokuInit:      sudokuInit.GetNewSudokuInit(settings),
-		DataReader:      dataReader.GetNewDataReader(settings, terminalPrinter, debugPrinter, prompter),
-		DataWriter: dataWriter.GetNewDataWriter(settings, dataPrinter,
-			func(file *os.File) printer.IPrinter {
-				return printer.NewTxtFilePrinter(file)
-			}),
+	commandConfig := &commands.CommandContext{
+		Settings:          settings,
+		ServiceCollection: services.Build(settings),
 	}
 
 	app := &cli.App{

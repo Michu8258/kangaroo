@@ -11,7 +11,7 @@ import (
 // TODO - add tests with script
 
 // SolveCommand provides solve sudoku command configuration
-func (commandConfig *CommandConfig) SolveCommand() *cli.Command {
+func (commandConfig *CommandContext) SolveCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "solve",
 		Aliases: []string{"s"},
@@ -41,10 +41,11 @@ func (commandConfig *CommandConfig) SolveCommand() *cli.Command {
 }
 
 // solveCommandHandler is an entry point function for solve sudoku command
-func (commandConfig *CommandConfig) solveCommandHandler(request *models.SolveCommandRequest) error {
+func (commandConfig *CommandContext) solveCommandHandler(request *models.SolveCommandRequest) error {
 	rawSudoku, err := commandConfig.getSudokuInputRawData(request)
 	if err != nil {
-		commandConfig.DataPrinter.PrintErrors("Invalid sudoku input", err)
+		commandConfig.ServiceCollection.DataPrinter.
+			PrintErrors("Invalid sudoku input", err)
 		return nil
 	}
 
@@ -53,16 +54,19 @@ func (commandConfig *CommandConfig) solveCommandHandler(request *models.SolveCom
 		return nil
 	}
 
-	solver := crook.GetNewSudokuSolver(commandConfig.Settings, commandConfig.DebugPrinter)
+	solver := crook.GetNewSudokuSolver(commandConfig.Settings,
+		commandConfig.ServiceCollection.DebugPrinter)
 	solved, errs := solver.Solve(sudoku)
 	if !solved {
-		commandConfig.TerminalPrinter.PrintError("Failed to solve the sudoku.")
-		commandConfig.TerminalPrinter.PrintNewLine()
+		commandConfig.ServiceCollection.TerminalPrinter.
+			PrintError("Failed to solve the sudoku.")
+		commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 		return nil
 	}
 
 	if commandConfig.Settings.UseDebugPrints && len(errs) >= 1 {
-		commandConfig.DataPrinter.PrintErrors("Sudoku solution failure reasons:", err)
+		commandConfig.ServiceCollection.DataPrinter.PrintErrors(
+			"Sudoku solution failure reasons:", err)
 		return nil
 	}
 
@@ -71,7 +75,7 @@ func (commandConfig *CommandConfig) solveCommandHandler(request *models.SolveCom
 	if request.OutputFile != nil {
 		validPaths := commandConfig.validateDestinationFilePaths(*request.OutputFile)
 		if len(validPaths) >= 1 {
-			commandConfig.TerminalPrinter.PrintNewLine()
+			commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 			commandConfig.executeSudokuFilesSave(sudoku, request.AsConfigRequest(), validPaths)
 		}
 	}
@@ -81,19 +85,21 @@ func (commandConfig *CommandConfig) solveCommandHandler(request *models.SolveCom
 
 // getSudokuInputRawData retrieves sudoku raw data by analyzing the
 // request object and executing one of the data sources logic.
-func (commandConfig *CommandConfig) getSudokuInputRawData(
+func (commandConfig *CommandContext) getSudokuInputRawData(
 	request *models.SolveCommandRequest) (*models.SudokuDTO, error) {
 
 	if request.InputJsonFile != nil {
-		return commandConfig.DataReader.ReadSudokuFromJsonFile(*request.InputJsonFile)
+		return commandConfig.ServiceCollection.DataReader.
+			ReadSudokuFromJsonFile(*request.InputJsonFile)
 	}
 
-	return commandConfig.DataReader.ReadSudokuFromConsole(request.AsConfigRequest())
+	return commandConfig.ServiceCollection.DataReader.
+		ReadSudokuFromConsole(request.AsConfigRequest())
 }
 
 // buildSolveCommandRequest retrieves options settings from the command
 // and constructs request object.
-func (commandConfig *CommandConfig) buildSolveCommandRequest(context *cli.Context) *models.SolveCommandRequest {
+func (commandConfig *CommandContext) buildSolveCommandRequest(context *cli.Context) *models.SolveCommandRequest {
 	boxSize := context.Int(boxSizeFlag.Name)
 	layoutWidth := context.Int(layoutWidthFlag.Name)
 	layoutHeight := context.Int(layoutHeightFlag.Name)

@@ -9,7 +9,7 @@ import (
 
 // validateDestinationFilePaths checks if all provided file names have no extension
 // or have json or txt extension. Returns slice of valid names
-func (commandConfig *CommandConfig) validateDestinationFilePaths(
+func (commandConfig *CommandContext) validateDestinationFilePaths(
 	destinationFilePaths ...string) []string {
 
 	validPaths := []string{}
@@ -31,14 +31,14 @@ func (commandConfig *CommandConfig) validateDestinationFilePaths(
 	}
 
 	if len(errorPaths) > 0 {
-		commandConfig.DataPrinter.PrintErrors(
+		commandConfig.ServiceCollection.DataPrinter.PrintErrors(
 			"Optput files listed below are not supported", errorPaths...)
 	}
 
 	if len(validPaths) < 1 {
-		commandConfig.TerminalPrinter.PrintError(
+		commandConfig.ServiceCollection.TerminalPrinter.PrintError(
 			"No supported file path to save sudoku data to.")
-		commandConfig.TerminalPrinter.PrintNewLine()
+		commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 	}
 
 	return validPaths
@@ -46,17 +46,17 @@ func (commandConfig *CommandConfig) validateDestinationFilePaths(
 
 // executeSudokuFilesSave executes iterative sudoku files save with
 // results printing uncluded
-func (commandConfig *CommandConfig) executeSudokuFilesSave(sudoku *models.Sudoku,
+func (commandConfig *CommandContext) executeSudokuFilesSave(sudoku *models.Sudoku,
 	request *models.SudokuConfigRequest, paths []string) {
-	commandConfig.TerminalPrinter.PrintPrimary("Saving results:")
-	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.TerminalPrinter.PrintPrimary("Saving results:")
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 	for _, path := range paths {
 		commandConfig.saveSudokuToFile(sudoku, request.AsConfigRequest(), path)
 	}
 }
 
 // executes save to file logic
-func (commandConfig *CommandConfig) saveSudokuToFile(sudoku *models.Sudoku,
+func (commandConfig *CommandContext) saveSudokuToFile(sudoku *models.Sudoku,
 	request *models.SudokuConfigRequest, path string) {
 
 	extension := filepath.Ext(path)
@@ -65,40 +65,46 @@ func (commandConfig *CommandConfig) saveSudokuToFile(sudoku *models.Sudoku,
 	var err error
 
 	if extension == ".txt" {
-		written, err = commandConfig.DataWriter.SaveSudokuToTxt(sudoku, path, request.Overwrite)
+		written, err = commandConfig.ServiceCollection.DataWriter.
+			SaveSudokuToTxt(sudoku, path, request.Overwrite)
 	} else {
-		written, err = commandConfig.DataWriter.SaveSudokuToJson(sudoku, path, request.Overwrite)
+		written, err = commandConfig.ServiceCollection.DataWriter.
+			SaveSudokuToJson(sudoku, path, request.Overwrite)
 	}
 
 	if err != nil {
-		commandConfig.TerminalPrinter.PrintError(fmt.Sprintf("- %s", err))
-		commandConfig.TerminalPrinter.PrintNewLine()
+		commandConfig.ServiceCollection.TerminalPrinter.PrintError(fmt.Sprintf("- %s", err))
+		commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 		return
 	}
 
 	if written {
-		commandConfig.TerminalPrinter.PrintSuccess(fmt.Sprintf("- '%s' written successfully", path))
-		commandConfig.TerminalPrinter.PrintNewLine()
+		commandConfig.ServiceCollection.TerminalPrinter.PrintSuccess(
+			fmt.Sprintf("- '%s' written successfully", path))
+		commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 		return
 	}
 
-	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- '%s' already exists (ommited)", path))
-	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.TerminalPrinter.PrintDefault(
+		fmt.Sprintf("- '%s' already exists (ommited)", path))
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 }
 
 // executeSudokuInitialization executes sudoku initialization (validation included)
 // based of dto input object. If everything is OK, sudoku data will be printer.
 // Returns mapped sudoku object and boolean flag indicating if everything is
 // correct up to this point
-func (commandConfig *CommandConfig) executeSudokuInitialization(
+func (commandConfig *CommandContext) executeSudokuInitialization(
 	sudokuDto *models.SudokuDTO) (*models.Sudoku, bool) {
 
 	sudoku := sudokuDto.ToSudoku()
-	isSudokuPrintable, errs := commandConfig.SudokuInit.InitializeSudoku(sudoku)
+	isSudokuPrintable, errs := commandConfig.ServiceCollection.
+		SudokuInit.InitializeSudoku(sudoku)
 
 	if len(errs) >= 1 {
-		commandConfig.DataPrinter.PrintErrors("Invalid sudoku configuration:", errs...)
-		commandConfig.TerminalPrinter.PrintNewLine()
+		commandConfig.ServiceCollection.DataPrinter.PrintErrors(
+			"Invalid sudoku configuration:", errs...)
+		commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 		if isSudokuPrintable {
 			commandConfig.printSudoku("Invalid sudoku values", sudoku)
 		}
@@ -107,29 +113,34 @@ func (commandConfig *CommandConfig) executeSudokuInitialization(
 
 	commandConfig.printSudokuConfig(sudoku)
 	commandConfig.printSudoku("Provided sudoku input:", sudoku)
-	commandConfig.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 
 	return sudoku, true
 }
 
 // printSudokuConfig prints sudoku configuration with provided printer
-func (commandConfig *CommandConfig) printSudokuConfig(sudoku *models.Sudoku) {
-	commandConfig.TerminalPrinter.PrintPrimary("Selected sudoku puzzle configuration:")
-	commandConfig.TerminalPrinter.PrintNewLine()
-	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- sudoku box size %d", sudoku.BoxSize))
-	commandConfig.TerminalPrinter.PrintNewLine()
-	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- sudoku layout width %d", sudoku.Layout.Width))
-	commandConfig.TerminalPrinter.PrintNewLine()
-	commandConfig.TerminalPrinter.PrintDefault(fmt.Sprintf("- sudoku layout height %d", sudoku.Layout.Width))
-	commandConfig.TerminalPrinter.PrintNewLine()
-	commandConfig.TerminalPrinter.PrintNewLine()
+func (commandConfig *CommandContext) printSudokuConfig(sudoku *models.Sudoku) {
+	commandConfig.ServiceCollection.TerminalPrinter.PrintPrimary(
+		"Selected sudoku puzzle configuration:")
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.TerminalPrinter.PrintDefault(
+		fmt.Sprintf("- sudoku box size %d", sudoku.BoxSize))
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.TerminalPrinter.PrintDefault(
+		fmt.Sprintf("- sudoku layout width %d", sudoku.Layout.Width))
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.TerminalPrinter.PrintDefault(
+		fmt.Sprintf("- sudoku layout height %d", sudoku.Layout.Width))
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
 }
 
 // printSudoku prints sudoku to standard out
-func (commandConfig *CommandConfig) printSudoku(description string,
+func (commandConfig *CommandContext) printSudoku(description string,
 	sudoku *models.Sudoku) {
 
-	commandConfig.TerminalPrinter.PrintPrimary(description)
-	commandConfig.TerminalPrinter.PrintNewLine()
-	commandConfig.DataPrinter.PrintSudoku(sudoku, commandConfig.TerminalPrinter)
+	commandConfig.ServiceCollection.TerminalPrinter.PrintPrimary(description)
+	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+	commandConfig.ServiceCollection.DataPrinter.PrintSudoku(
+		sudoku, commandConfig.ServiceCollection.TerminalPrinter)
 }
