@@ -17,6 +17,10 @@ import (
 // TODO - add tests with script
 
 func main() {
+	run(os.Args)
+}
+
+func run(arguments []string) {
 	settings := createSettings()
 
 	commandConfig := &commands.CommandContext{
@@ -49,7 +53,7 @@ func main() {
 		},
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(arguments); err != nil {
 		log.Fatal(err)
 	}
 }

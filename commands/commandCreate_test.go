@@ -16,8 +16,8 @@ func TestCreateCommand(t *testing.T) {
 	testCases := []struct {
 		name             string
 		arguments        []string
-		sudokuRead       *models.SudokuDTO
-		sudokuReadError  error
+		dataReaderResult *models.SudokuDTO
+		dataReaderError  error
 		sudokuInitResult bool
 		sudokuInitErrors []error
 		printContent     []string
@@ -25,8 +25,8 @@ func TestCreateCommand(t *testing.T) {
 		{
 			name:             "Everything OK",
 			arguments:        []string{"", "create", "-s", "3", "--lw", "4", "--lh", "5", "-r", "./relative/path/to/file.json"},
-			sudokuRead:       testHelpers.GetTestSudokuDto(),
-			sudokuReadError:  nil,
+			dataReaderResult: testHelpers.GetTestSudokuDto(),
+			dataReaderError:  nil,
 			sudokuInitResult: true,
 			sudokuInitErrors: []error{},
 			printContent: []string{
@@ -36,8 +36,8 @@ func TestCreateCommand(t *testing.T) {
 		{
 			name:             "Everything OK - no flags",
 			arguments:        []string{"", "create", "./relative/path/to/file.json"},
-			sudokuRead:       testHelpers.GetTestSudokuDto(),
-			sudokuReadError:  nil,
+			dataReaderResult: testHelpers.GetTestSudokuDto(),
+			dataReaderError:  nil,
 			sudokuInitResult: true,
 			sudokuInitErrors: []error{},
 			printContent: []string{
@@ -47,8 +47,8 @@ func TestCreateCommand(t *testing.T) {
 		{
 			name:             "No destination path",
 			arguments:        []string{"", "create", "-s", "3", "--lw", "4", "--lh", "5", "-r"},
-			sudokuRead:       testHelpers.GetTestSudokuDto(),
-			sudokuReadError:  nil,
+			dataReaderResult: testHelpers.GetTestSudokuDto(),
+			dataReaderError:  nil,
 			sudokuInitResult: true,
 			sudokuInitErrors: []error{},
 			printContent: []string{
@@ -58,8 +58,8 @@ func TestCreateCommand(t *testing.T) {
 		{
 			name:             "Sudoku console read fail",
 			arguments:        []string{"", "create", "-s", "3", "--lw", "4", "--lh", "5", "-r", "./relative/path/to/file.json"},
-			sudokuRead:       nil,
-			sudokuReadError:  errors.New("failed to read sudoku from console"),
+			dataReaderResult: nil,
+			dataReaderError:  errors.New("failed to read sudoku from console"),
 			sudokuInitResult: true,
 			sudokuInitErrors: []error{},
 			printContent: []string{
@@ -69,8 +69,8 @@ func TestCreateCommand(t *testing.T) {
 		{
 			name:             "No valid file save path",
 			arguments:        []string{"", "create", "-s", "3", "--lw", "4", "--lh", "5", "-r", "./relative/path/to/file.badext"},
-			sudokuRead:       testHelpers.GetTestSudokuDto(),
-			sudokuReadError:  nil,
+			dataReaderResult: testHelpers.GetTestSudokuDto(),
+			dataReaderError:  nil,
 			sudokuInitResult: true,
 			sudokuInitErrors: []error{},
 			printContent: []string{
@@ -81,8 +81,8 @@ func TestCreateCommand(t *testing.T) {
 		{
 			name:             "Sudoku initialization error",
 			arguments:        []string{"", "create", "-s", "3", "--lw", "4", "--lh", "5", "-r", "./relative/path/to/file.json"},
-			sudokuRead:       testHelpers.GetTestSudokuDto(),
-			sudokuReadError:  nil,
+			dataReaderResult: testHelpers.GetTestSudokuDto(),
+			dataReaderError:  nil,
 			sudokuInitResult: false,
 			sudokuInitErrors: []error{errors.New("failed to initialize sudoku")},
 			printContent: []string{
@@ -100,7 +100,7 @@ func TestCreateCommand(t *testing.T) {
 			ServiceCollection: &services.ServiceCollection{
 				DataPrinter:     dataPrinters.GetNewDataPrinter(settings, testPrinter),
 				TerminalPrinter: testPrinter,
-				DataReader:      testHelpers.NewTestDataReader(testCase.sudokuRead, testCase.sudokuReadError),
+				DataReader:      testHelpers.NewTestDataReader(testCase.dataReaderResult, testCase.dataReaderError),
 				SudokuInit:      testHelpers.NewTestSudokuInit(testCase.sudokuInitResult, testCase.sudokuInitErrors),
 				DataWriter:      testHelpers.NewTestDataWriter(true, nil),
 			},

@@ -1,0 +1,477 @@
+{
+  "boxSize": 3,
+  "layout": {
+    "width": 3,
+    "height": 3
+  },
+  "boxes": [
+    {
+      "disabled": false,
+      "indexRow": 0,
+      "indexColumn": 0,
+      "cells": [
+        {
+          "value": 2,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 7,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 0,
+      "indexColumn": 1,
+      "cells": [
+        {
+          "value": 7,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 2,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 0,
+      "indexColumn": 2,
+      "cells": [
+        {
+          "value": 8,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 2,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 7,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 1,
+      "indexColumn": 0,
+      "cells": [
+        {
+          "value": 3,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 7,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 2,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 1,
+      "indexColumn": 1,
+      "cells": [
+        {
+          "value": 4,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 7,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 2,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 1,
+      "indexColumn": 2,
+      "cells": [
+        {
+          "value": 2,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 7,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 2,
+      "indexColumn": 0,
+      "cells": [
+        {
+          "value": 7,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 2,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 2,
+      "indexColumn": 1,
+      "cells": [
+        {
+          "value": 5,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 2,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 7,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 1,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    },
+    {
+      "disabled": false,
+      "indexRow": 2,
+      "indexColumn": 2,
+      "cells": [
+        {
+          "value": 1,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 8,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 9,
+          "indexRowInBox": 0,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 3,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 5,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 4,
+          "indexRowInBox": 1,
+          "indexColumnInBox": 2
+        },
+        {
+          "value": 6,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 0
+        },
+        {
+          "value": 7,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 1
+        },
+        {
+          "value": 2,
+          "indexRowInBox": 2,
+          "indexColumnInBox": 2
+        }
+      ]
+    }
+  ]
+}

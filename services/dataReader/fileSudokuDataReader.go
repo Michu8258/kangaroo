@@ -25,8 +25,8 @@ func (reader *DataReader) ReadSudokuFromJsonFile(path string) (*models.SudokuDTO
 	if err != nil {
 		return nil, fmt.Errorf("unable to read sudoku input data file '%s'", absolutePath)
 	}
-	sudoku := models.SudokuDTO{}
 
+	sudoku := models.SudokuDTO{}
 	err = json.Unmarshal(sudokuDataBytes, &sudoku)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse sudoku input data file '%s'", absolutePath)

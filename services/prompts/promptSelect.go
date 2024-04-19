@@ -8,23 +8,19 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type PromptSelectOption struct {
-	Label string
-	Value interface{}
-}
-
 type promptSelect struct {
 	cursor       int
 	title        string
-	activeChoice PromptSelectOption
-	choices      []PromptSelectOption
+	activeChoice models.PromptSelectOption
+	choices      []models.PromptSelectOption
 	quit         bool
 }
 
 // PromptMakeSelectChoice wraps logic for promptin the user to select
 // one of selected option (with default option index).
-func (prompter *Prompter) PromptMakeSelectChoice(title string, options []PromptSelectOption,
-	initialChoiceIndex int) (PromptSelectOption, error) {
+func (prompter *Prompter) PromptMakeSelectChoice(title string,
+	options []models.PromptSelectOption,
+	initialChoiceIndex int) (models.PromptSelectOption, error) {
 	model, err := prompter.TeaProgramRunner(promptSelect{
 		cursor:       initialChoiceIndex,
 		activeChoice: options[initialChoiceIndex],

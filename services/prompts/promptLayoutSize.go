@@ -2,6 +2,8 @@ package prompts
 
 import (
 	"fmt"
+
+	"github.com/Michu8258/kangaroo/models"
 )
 
 // PromptGetLayoutSize prompts user for layout size - if wrong value pre-provided
@@ -30,13 +32,13 @@ func (prompter *Prompter) PromptGetLayoutSize(initialSize *int8, direction strin
 }
 
 // getBoxSizeSelectOptions generates slice of correct options for sudoku layout
-func (prompter *Prompter) getLayoutSelectOptions(direction string) ([]PromptSelectOption, int) {
-	options := []PromptSelectOption{}
+func (prompter *Prompter) getLayoutSelectOptions(direction string) ([]models.PromptSelectOption, int) {
+	options := []models.PromptSelectOption{}
 	defaultElementIndex := 0
 
 	var size int8 = 0
 	for size = prompter.Settings.MinimumLayoutSizeInclusive; size <= prompter.Settings.MaximumLayoutSizeInclusive; size++ {
-		options = append(options, PromptSelectOption{
+		options = append(options, models.PromptSelectOption{
 			Label: fmt.Sprintf("Layout size %s %d", direction, size),
 			Value: size,
 		})

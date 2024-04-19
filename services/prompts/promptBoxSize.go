@@ -2,6 +2,8 @@ package prompts
 
 import (
 	"fmt"
+
+	"github.com/Michu8258/kangaroo/models"
 )
 
 // PromptGetBoxSize prompts user for box size - if wrong value pre-provided
@@ -30,13 +32,13 @@ func (prompter *Prompter) PromptGetBoxSize(initialBoxSize *int8) (int8, error) {
 }
 
 // getBoxSizeSelectOptions generates slice of correct options for box size
-func (prompter *Prompter) getBoxSizeSelectOptions() ([]PromptSelectOption, int) {
-	options := []PromptSelectOption{}
+func (prompter *Prompter) getBoxSizeSelectOptions() ([]models.PromptSelectOption, int) {
+	options := []models.PromptSelectOption{}
 	defaultElementIndex := 0
 
 	var size int8 = 0
 	for size = prompter.Settings.MinimumBoxSizeInclusive; size <= prompter.Settings.MaximumBoxSizeInclusive; size++ {
-		options = append(options, PromptSelectOption{
+		options = append(options, models.PromptSelectOption{
 			Label: fmt.Sprintf("Box size %d", size),
 			Value: size,
 		})

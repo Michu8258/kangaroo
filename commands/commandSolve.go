@@ -3,7 +3,6 @@ package commands
 import (
 	"github.com/Michu8258/kangaroo/helpers"
 	"github.com/Michu8258/kangaroo/models"
-	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
 	"github.com/urfave/cli/v2"
 )
 
@@ -51,9 +50,7 @@ func (commandConfig *CommandContext) solveCommandHandler(request *models.SolveCo
 		return nil
 	}
 
-	solver := crook.GetNewSudokuSolver(commandConfig.Settings,
-		commandConfig.ServiceCollection.DebugPrinter)
-	solved, errs := solver.Solve(sudoku)
+	solved, errs := commandConfig.ServiceCollection.Solver.Solve(sudoku)
 	if !solved {
 		commandConfig.ServiceCollection.TerminalPrinter.
 			PrintError("Failed to solve the sudoku.")
