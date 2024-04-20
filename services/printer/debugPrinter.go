@@ -1,18 +1,20 @@
 package printer
 
 import (
-	"fmt"
+	"io"
 
 	"github.com/Michu8258/kangaroo/models"
 )
 
 type DebugPrinter struct {
 	settings *models.Settings
+	writer   io.Writer
 }
 
-func NewDebugPrinter(settings *models.Settings) IPrinter {
+func NewDebugPrinter(settings *models.Settings, writer io.Writer) IPrinter {
 	return DebugPrinter{
 		settings: settings,
+		writer:   writer,
 	}
 }
 
@@ -37,13 +39,11 @@ func (dp DebugPrinter) PrintBorder(text string) {
 }
 
 func (dp DebugPrinter) PrintNewLine() {
-	if dp.settings.UseDebugPrints {
-		fmt.Println()
-	}
+	dp.Print("\n")
 }
 
 func (dp DebugPrinter) Print(text string) {
 	if dp.settings.UseDebugPrints {
-		fmt.Printf("%s", models.TerminalStyles.DebugStyle.Render(text))
+		dp.writer.Write([]byte(models.TerminalStyles.DebugStyle.Render(text)))
 	}
 }

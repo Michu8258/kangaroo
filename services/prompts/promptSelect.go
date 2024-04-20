@@ -48,7 +48,8 @@ func (m promptSelect) Init() tea.Cmd {
 func (m promptSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
+		keyString := msg.String()
+		switch keyString {
 		case "ctrl+c", "esc":
 			m.quit = true
 			return m, tea.Quit

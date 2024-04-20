@@ -27,8 +27,8 @@ type ServiceCollection struct {
 
 // Build creates a service collection to use in the application
 func Build(settings *models.Settings) *ServiceCollection {
-	terminalPrinter := printer.NewTerminalPrinter(settings)
-	debugPrinter := printer.NewDebugPrinter(settings)
+	terminalPrinter := printer.NewTerminalPrinter(settings, os.Stdout)
+	debugPrinter := printer.NewDebugPrinter(settings, os.Stdout)
 	dataPrinter := dataPrinters.GetNewDataPrinter(settings, terminalPrinter)
 	prompter := prompts.GetNewPrompter(
 		settings,

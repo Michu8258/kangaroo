@@ -25,7 +25,7 @@ func (writer *DataWriter) SaveSudokuDtoToJson(sudokuDto *models.SudokuDTO, path 
 	}
 
 	jsonBytes, err := json.MarshalIndent(sudokuDto, "", "  ")
-	if err != nil {
+	if sudokuDto == nil || err != nil {
 		return false, fmt.Errorf("failed to generate sudoku json string for file '%s'",
 			saveConfig.absoluteFilePath)
 	}

@@ -1,37 +1,41 @@
 package printer
 
-import "os"
+import "io"
 
 type TxtFilePrinter struct {
-	file *os.File
+	writer io.Writer
 }
 
-func NewTxtFilePrinter(file *os.File) IPrinter {
+func NewTxtFilePrinter(writer io.Writer) IPrinter {
 	return TxtFilePrinter{
-		file: file,
+		writer: writer,
 	}
 }
 
 func (fp TxtFilePrinter) PrintDefault(text string) {
-	fp.file.WriteString(text)
+	fp.Print(text)
 }
 
 func (fp TxtFilePrinter) PrintPrimary(text string) {
-	fp.file.WriteString(text)
+	fp.Print(text)
 }
 
 func (fp TxtFilePrinter) PrintSuccess(text string) {
-	fp.file.WriteString(text)
+	fp.Print(text)
 }
 
 func (fp TxtFilePrinter) PrintError(text string) {
-	fp.file.WriteString(text)
+	fp.Print(text)
 }
 
 func (fp TxtFilePrinter) PrintBorder(text string) {
-	fp.file.WriteString(text)
+	fp.Print(text)
 }
 
 func (fp TxtFilePrinter) PrintNewLine() {
-	fp.file.WriteString("\n")
+	fp.Print("\n")
+}
+
+func (fp TxtFilePrinter) Print(text string) {
+	fp.writer.Write([]byte(text))
 }

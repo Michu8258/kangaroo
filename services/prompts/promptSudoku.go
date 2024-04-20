@@ -58,6 +58,10 @@ func (m sudokuValuesPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quit = true
 			return m, tea.Quit
 
+		case "enter":
+			m.quit = true
+			return m, tea.Quit
+
 		case "up", "k":
 			goUpSudokuCell(&m)
 
@@ -107,14 +111,10 @@ func (m sudokuValuesPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			backspaceCurrentCellValue(&m)
 
 		case "e":
-			changeDisableStateOfSurrentBox(&m, true)
+			changeDisableStateOfCurrentBox(&m, true)
 
 		case "d":
-			changeDisableStateOfSurrentBox(&m, false)
-
-		case "enter":
-			m.quit = true
-			return m, tea.Quit
+			changeDisableStateOfCurrentBox(&m, false)
 		}
 
 	}
@@ -574,8 +574,8 @@ func backspaceCurrentCellValue(model *sudokuValuesPrompt) {
 	model.currentCell.Value = &newValue
 }
 
-// changeDisableStateOfSurrentBox enables or disables current box
-func changeDisableStateOfSurrentBox(model *sudokuValuesPrompt, newEnabled bool) {
+// changeDisableStateOfCurrentBox enables or disables current box
+func changeDisableStateOfCurrentBox(model *sudokuValuesPrompt, newEnabled bool) {
 	if model.currentBox == nil {
 		return
 	}
