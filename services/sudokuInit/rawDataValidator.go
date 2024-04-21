@@ -152,8 +152,8 @@ func (init *SudokuInit) validateCellsPresence(sudoku *models.Sudoku,
 			if cell == nil {
 				return fmt.Errorf(
 					"sudoku box %s is missing a cell %s",
-					helpers.GetCoordinatesString(rowIndex+1, columnIndex+1, true),
-					helpers.GetCellCoordinatesString(sudoku, box, cell, true))
+					helpers.GetBoxCoordinatesString(box, true),
+					helpers.GetCoordinatesString(rowIndex+1, columnIndex+1, true))
 			}
 		}
 	}
