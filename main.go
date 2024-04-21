@@ -10,8 +10,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// TODO update documentation markdown file
-
 func main() {
 	run(os.Args)
 }
