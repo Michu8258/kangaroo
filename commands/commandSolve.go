@@ -6,6 +6,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// TODO - update command description to tell about precedense of sudoku inputs
+// and ignoring other
+
 // SolveCommand provides solve sudoku command configuration
 func (commandConfig *CommandContext) SolveCommand() *cli.Command {
 	return &cli.Command{
