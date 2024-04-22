@@ -64,5 +64,6 @@ func createSettings() *models.Settings {
 		SudokuPrintoutValuePaddingLength: 1,
 		UseDebugPrints:                   false,
 		SilentConsolePrints:              false,
+		SudokuBinaryEncoderVersion:       1,
 	}
 }

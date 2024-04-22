@@ -23,7 +23,7 @@ func (manager *BinarySudokuManager) ToBase64(sudokuDto *models.SudokuDTO) (strin
 
 // ToBytes converts sudoku dto object to its binary data representation
 func (manager *BinarySudokuManager) ToBytes(sudokuDto *models.SudokuDTO) ([]byte, error) {
-	var version uint16 = 1
+	var version uint16 = manager.Settings.SudokuBinaryEncoderVersion
 	result := []byte{}
 
 	handlers := map[uint16]func(sudokuDto *models.SudokuDTO, result []byte) ([]byte, error){

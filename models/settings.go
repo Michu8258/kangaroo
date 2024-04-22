@@ -10,4 +10,5 @@ type Settings struct {
 	SudokuPrintoutValuePaddingLength int8
 	UseDebugPrints                   bool
 	SilentConsolePrints              bool
+	SudokuBinaryEncoderVersion       uint16
 }
