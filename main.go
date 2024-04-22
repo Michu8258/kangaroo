@@ -42,8 +42,9 @@ func run(arguments []string) {
 			},
 		},
 		Commands: []*cli.Command{
-			commandConfig.SolveCommand(),
 			commandConfig.CreateCommand(),
+			commandConfig.SolveCommand(),
+			commandConfig.ExecuteCommand(),
 		},
 	}
 

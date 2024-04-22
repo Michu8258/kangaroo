@@ -95,7 +95,7 @@ func (commandConfig *CommandContext) saveSudokuToFile(sudoku *models.Sudoku,
 // Returns mapped sudoku object and boolean flag indicating if everything is
 // correct up to this point
 func (commandConfig *CommandContext) executeSudokuInitialization(
-	sudokuDto *models.SudokuDTO) (*models.Sudoku, bool) {
+	sudokuDto *models.SudokuDTO, printSUdokuData bool) (*models.Sudoku, bool) {
 
 	sudoku := sudokuDto.ToSudoku()
 	isSudokuPrintable, errs := commandConfig.ServiceCollection.
@@ -111,9 +111,11 @@ func (commandConfig *CommandContext) executeSudokuInitialization(
 		return sudoku, false
 	}
 
-	commandConfig.printSudokuConfig(sudoku)
-	commandConfig.printSudoku("Provided sudoku input:", sudoku)
-	commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+	if printSUdokuData {
+		commandConfig.printSudokuConfig(sudoku)
+		commandConfig.printSudoku("Provided sudoku input:", sudoku)
+		commandConfig.ServiceCollection.TerminalPrinter.PrintNewLine()
+	}
 
 	return sudoku, true
 }

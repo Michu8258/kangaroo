@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/Michu8258/kangaroo/models"
+	"github.com/Michu8258/kangaroo/services/binarySudokuManager"
 	crook "github.com/Michu8258/kangaroo/services/crookMethodSolver"
 	"github.com/Michu8258/kangaroo/services/dataPrinters"
 	"github.com/Michu8258/kangaroo/services/dataReader"
@@ -23,6 +24,7 @@ type ServiceCollection struct {
 	SudokuInit      sudokuInit.ISudokuInit
 	Prompter        prompts.IPrompter
 	Solver          crook.ISudokuSolver
+	SudokuEncoder   binarySudokuManager.IBinarySudokuManager
 }
 
 // Build creates a service collection to use in the application
@@ -49,6 +51,7 @@ func Build(settings *models.Settings) *ServiceCollection {
 			func(file *os.File) printer.IPrinter {
 				return printer.NewTxtFilePrinter(file)
 			}),
-		Solver: crook.GetNewSudokuSolver(settings, debugPrinter),
+		Solver:        crook.GetNewSudokuSolver(settings, debugPrinter),
+		SudokuEncoder: binarySudokuManager.GetNewBinarySudokuManager(settings),
 	}
 }

@@ -11,8 +11,10 @@ func (commandConfig *CommandContext) CreateCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "create",
 		Aliases: []string{"c"},
-		Usage: "Creates sudoku puzzle data and saves to provided " +
-			"file paths (JSON and TXT files supported, default is JSON)",
+		Usage: "Creates sudoku puzzle data and saves to provided file paths\n" +
+			"(JSON and TXT files supported, default is JSON). At least one file\n" +
+			"path for output must be provided. You can ommit prompts for box size\n" +
+			"and sudoku layout by using flags -b, --lw, --lh.",
 		Flags: []cli.Flag{
 			&boxSizeFlag,
 			&layoutWidthFlag,
@@ -51,7 +53,7 @@ func (commandConfig *CommandContext) createCommandHandler(request *models.Create
 		return nil
 	}
 
-	sudoku, ok := commandConfig.executeSudokuInitialization(sudokuDto)
+	sudoku, ok := commandConfig.executeSudokuInitialization(sudokuDto, true)
 	if !ok {
 		return nil
 	}

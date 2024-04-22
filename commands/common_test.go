@@ -211,7 +211,7 @@ func TestExecuteSudokuInitialization(t *testing.T) {
 			},
 		}
 
-		sudoku, ok := config.executeSudokuInitialization(testHelpers.GetTestSudokuDto())
+		sudoku, ok := config.executeSudokuInitialization(testHelpers.GetTestSudokuDto(), true)
 
 		if sudoku == nil {
 			t.Errorf("%v: Sudoku pointer is nil. Expected non nil pointer to sudoku object.",

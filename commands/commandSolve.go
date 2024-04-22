@@ -14,7 +14,13 @@ func (commandConfig *CommandContext) SolveCommand() *cli.Command {
 	return &cli.Command{
 		Name:    "solve",
 		Aliases: []string{"s"},
-		Usage:   "Solves a provided sudoku puzzle",
+		Usage: "Solves a provided sudoku puzzle. There are few formats supported\n" +
+			"for this command. You can pass an input data json file path using -i flag.\n" +
+			"This option will have precedence over all other because the file contains all\n" +
+			"the data required to build sudoku object. In case no -i flag is passed, then\n" +
+			"cli works in manual mode - it will ask for box size, and sudoku layout and all\n" +
+			"sudoku values. Box size, and sudoku layout prompts may be ommited by using -s,\n" +
+			"--lw and --lh flags. You can save result of sulution to a file with a -o flag.",
 		Flags: []cli.Flag{
 			&boxSizeFlag,
 			&layoutWidthFlag,
@@ -48,7 +54,7 @@ func (commandConfig *CommandContext) solveCommandHandler(request *models.SolveCo
 		return nil
 	}
 
-	sudoku, ok := commandConfig.executeSudokuInitialization(rawSudoku)
+	sudoku, ok := commandConfig.executeSudokuInitialization(rawSudoku, true)
 	if !ok {
 		return nil
 	}
